@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plataforma de Chat Encadenado & Operadores Live</title>
+  <title>Plataforma de Chat IA & Operadores Live</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
@@ -42,7 +42,7 @@
         </div>
         <div>
           <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-sky-400 bg-clip-text text-transparent">ConnectFlow</span>
-          <span class="block text-[10px] text-slate-400 font-medium tracking-wider uppercase">Atención & Chat Encadenado</span>
+          <span class="block text-[10px] text-slate-400 font-medium tracking-wider uppercase">Atención & Chat IA</span>
         </div>
       </div>
 
@@ -506,11 +506,11 @@
     let defaultBotTree = {
       "start": {
         id: "start",
-        message: "¡Hola! Bienvenido a nuestro servicio de atención. ¿Cómo te podemos ayudar hoy?",
+        message: "¡Hola! Bienvenido a nuestro servicio de atención Automatizado 24/7. ¿Cómo te podemos ayudar hoy?",
         imageUrl: "",
         options: [
-          { text: " Consultar Servicios y Planes", nextNode: "servicios" },
-          { text: " Estado de mi Solicitud o Trámite", nextNode: "estado_tramite" },
+          { text: " Consulta o Reclamo", nextNode: "inicio" },
+          { text: " Zona y Horario de funcionamiento", nextNode: "zona" },
           { text: " Hablar con un Operador Humano", action: "request_operator" }
         ]
       },

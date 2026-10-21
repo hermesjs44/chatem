@@ -3,655 +3,1677 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión - Hermes Suares</title>
+    <title>Plataforma de Chat Multi-Operador & Chatbot Dynamic</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- React & React DOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        /* Custom scrollbars */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .animate-fade-in { animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* 3D Button Effects */
+        .btn-3d-blue {
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 0 #1d4ed8, 0 6px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.1s ease;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .btn-3d-blue:hover {
+            background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #1d4ed8, 0 8px 16px rgba(37, 99, 235, 0.3);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
+        .btn-3d-blue:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #1d4ed8, 0 2px 4px rgba(37, 99, 235, 0.2);
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+
+        .btn-3d-purple {
+            background: linear-gradient(180deg, #a855f7 0%, #9333ea 100%);
+            box-shadow: 0 4px 0 #7e22ce, 0 6px 12px rgba(147, 51, 234, 0.25);
+            transition: all 0.1s ease;
         }
-        .submenu-transition {
-            transition: max-height 0.3s ease-in-out;
-            overflow: hidden;
+        .btn-3d-purple:hover {
+            background: linear-gradient(180deg, #c084fc 0%, #a855f7 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #7e22ce, 0 8px 16px rgba(147, 51, 234, 0.3);
+        }
+        .btn-3d-purple:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #7e22ce, 0 2px 4px rgba(147, 51, 234, 0.2);
+        }
+
+        .btn-3d-emerald {
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 0 #047857, 0 6px 12px rgba(16, 185, 129, 0.25);
+            transition: all 0.1s ease;
+        }
+        .btn-3d-emerald:hover {
+            background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #047857, 0 8px 16px rgba(16, 185, 129, 0.3);
+        }
+        .btn-3d-emerald:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #047857, 0 2px 4px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-3d-slate {
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            box-shadow: 0 4px 0 #cbd5e1, 0 4px 8px rgba(0,0,0,0.06);
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            transition: all 0.1s ease;
+        }
+        .btn-3d-slate:hover {
+            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #cbd5e1, 0 6px 12px rgba(0,0,0,0.08);
+        }
+        .btn-3d-slate:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #cbd5e1, 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-3d-sky-option {
+            background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+            box-shadow: 0 4px 0 #bae6fd, 0 6px 12px rgba(14, 165, 233, 0.12);
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+            transition: all 0.12s ease;
+        }
+        .btn-3d-sky-option:hover {
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #7dd3fc, 0 10px 18px rgba(14, 165, 233, 0.18);
+            color: #0284c7;
+        }
+        .btn-3d-sky-option:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #7dd3fc, 0 2px 4px rgba(14, 165, 233, 0.1);
+        }
+
+        .btn-3d-red {
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 0 #b91c1c, 0 6px 12px rgba(220, 38, 38, 0.25);
+            transition: all 0.1s ease;
+        }
+        .btn-3d-red:hover {
+            background: linear-gradient(180deg, #f87171 0%, #ef4444 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #b91c1c;
+        }
+        .btn-3d-red:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #b91c1c;
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-sky-50 via-sky-100/60 to-blue-50 text-slate-800 antialiased h-screen overflow-hidden">
 
-<div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+<div id="root" class="h-full"></div>
 
-<!-- Modal Global para Mensajes (Reemplazo seguro de alert) -->
-<div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
-        <div class="flex items-center gap-3 text-indigo-600 mb-4">
-            <i id="modal-icon" class="fas fa-info-circle text-2xl"></i>
-            <h3 id="modal-title" class="text-lg font-bold text-slate-900">Notificación</h3>
-        </div>
-        <p id="modal-message" class="text-slate-600 mb-6 text-sm leading-relaxed"></p>
-        <div class="flex justify-end gap-3">
-            <button id="modal-close-btn" onclick="closeCustomModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors shadow-sm">
-                Aceptar
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Header Principal -->
-<header class="bg-indigo-900 text-white shadow-md border-b border-indigo-800 sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <button id="toggle-sidebar-btn" class="p-2 rounded-lg hover:bg-indigo-800 text-indigo-200 hover:text-white transition-colors lg:hidden">
-                <i class="fas fa-bars text-xl"></i>
-            </button>
-            <div class="flex items-center gap-2">
-                <div class="bg-indigo-600 text-white p-2 rounded-lg font-bold text-lg flex items-center justify-center w-10 h-10 shadow">
-                    HS
-                </div>
-                <div>
-                    <h1 class="font-bold text-base leading-tight">Hermes Suares</h1>
-                    <p class="text-xs text-indigo-300">Sistema Integrado de Gestión</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4">
-            <div class="hidden sm:flex flex-col text-right">
-                <span id="user-display-name" class="text-sm font-semibold text-indigo-100">Usuario Demo</span>
-                <span id="user-display-role" class="text-xs text-indigo-300 capitalize">Administrador</span>
-            </div>
-            <div class="w-9 h-9 rounded-full bg-indigo-700 border-2 border-indigo-400 flex items-center justify-center text-sm font-bold text-white shadow-sm">
-                <i class="fas fa-user"></i>
-            </div>
-        </div>
-    </div>
-</header>
-
-<div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6">
-    
-    <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="w-64 bg-white rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 p-4 space-y-2 hidden lg:block">
-        <div class="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Menú Principal</div>
-        <nav class="space-y-1" id="nav-container">
-            <!-- Menú General/Inicio -->
-            <button onclick="showSection('sec-inicio')" class="nav-btn active-nav w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">
-                <i class="fas fa-chart-line text-slate-400 w-5"></i>
-                <span>Inicio / Panel</span>
-            </button>
-
-            <!-- MENÚ FOTOCOPIADORA -->
-            <div class="menu-group" data-menu="fotocopiadora">
-                <button onclick="toggleSubmenu('sub-fotocopiadora')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-all">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-print text-slate-400 w-5"></i>
-                        <span>Fotocopiadora</span>
-                    </div>
-                    <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-200" id="arrow-sub-fotocopiadora"></i>
-                </button>
-                <div id="sub-fotocopiadora" class="hidden pl-8 pr-2 space-y-1 mt-1">
-                    <button onclick="showSection('sec-fc-inicial')" data-submenu="fc-inicial" class="nav-btn w-full text-left py-2 px-3 rounded-lg text-xs font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
-                        <i class="fas fa-[#6366f1] fa-xs fa-circle text-[8px]"></i>
-                        <span>Carga inicial de copias</span>
-                    </button>
-                    <button onclick="showSection('sec-fc-modificacion')" data-submenu="fc-modificacion" class="nav-btn w-full text-left py-2 px-3 rounded-lg text-xs font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
-                        <i class="fas fa-circle text-[8px]"></i>
-                        <span>Modificación</span>
-                    </button>
-                    <button onclick="showSection('sec-fc-diaria')" data-submenu="fc-diaria" class="nav-btn w-full text-left py-2 px-3 rounded-lg text-xs font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
-                        <i class="fas fa-circle text-[8px]"></i>
-                        <span>Carga diaria</span>
-                    </button>
-                    <button onclick="showSection('sec-fc-verificar')" data-submenu="fc-verificar" class="nav-btn w-full text-left py-2 px-3 rounded-lg text-xs font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
-                        <i class="fas fa-circle text-[8px]"></i>
-                        <span>Verificar contador</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Otros Menús Existentes Placeholder -->
-            <div class="pt-4 border-t border-slate-100">
-                <div class="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Configuración</div>
-                <button onclick="showSection('sec-permisos')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">
-                    <i class="fas fa-shield-alt text-slate-400 w-5"></i>
-                    <span>Permisos y Roles</span>
-                </button>
-            </div>
-        </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-hidden">
-
-        <!-- SECCIÓN INICIO -->
-        <section id="sec-inicio" class="content-section">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-slate-900">Panel Principal</h2>
-                <p class="text-slate-500 text-sm">Bienvenido al sistema de administración general.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-xl">
-                    <div class="flex items-center gap-4">
-                        <div class="p-3 bg-indigo-600 text-white rounded-lg"><i class="fas fa-print text-xl"></i></div>
-                        <div>
-                            <div class="text-xs font-semibold text-indigo-600 uppercase">Fotocopiadora</div>
-                            <div class="text-2xl font-bold text-slate-800" id="dash-contador-total">0</div>
-                            <div class="text-xs text-slate-500">Contador Actual Acumulado</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 1: FOTOCOPIADORA - CARGA INICIAL -->
-        <section id="sec-fc-inicial" class="content-section hidden">
-            <div class="border-b border-slate-200 pb-4 mb-6">
-                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fas fa-play text-indigo-600"></i> Carga Inicial de Copias
-                </h2>
-                <p class="text-sm text-slate-500">Establezca el valor del contador inicial para el sistema de fotocopiado.</p>
-            </div>
-
-            <form id="form-fc-inicial" onsubmit="guardarFotocopiadora(event, 'Carga Inicial')" class="max-w-xl space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-                    <input type="date" id="fc-inicial-fecha" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Contador Inicial (Hojas)</label>
-                    <input type="number" id="fc-inicial-contador" min="0" required placeholder="Ej: 15000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Autorización</label>
-                    <input type="text" id="fc-inicial-autorizacion" required placeholder="Nombre o cargo del autorizador" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div class="pt-2">
-                    <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm transition-colors shadow-sm flex items-center justify-center gap-2">
-                        <i class="fas fa-save"></i> Guardar Carga Inicial
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- SECCIÓN 2: FOTOCOPIADORA - MODIFICACIÓN -->
-        <section id="sec-fc-modificacion" class="content-section hidden">
-            <div class="border-b border-slate-200 pb-4 mb-6">
-                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fas fa-edit text-indigo-600"></i> Modificación de Contador
-                </h2>
-                <p class="text-sm text-slate-500">Ajuste manual de hojas (+ para aumentar, - para decrementar por corrección o mantenimiento).</p>
-            </div>
-
-            <form id="form-fc-modificacion" onsubmit="guardarFotocopiadora(event, 'Modificación')" class="max-w-xl space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-                    <input type="date" id="fc-mod-fecha" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Ajuste de Hojas (+/-)</label>
-                    <input type="number" id="fc-mod-hojas" required placeholder="Ej: -50 o 100" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                    <span class="text-xs text-slate-400">Valores positivos suman, valores negativos restan del contador.</span>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Motivo</label>
-                    <textarea id="fc-mod-motivo" rows="3" required placeholder="Describa la razón del ajuste..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Autorización</label>
-                    <input type="text" id="fc-mod-autorizacion" required placeholder="Autorizado por..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div class="pt-2">
-                    <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm transition-colors shadow-sm flex items-center justify-center gap-2">
-                        <i class="fas fa-save"></i> Registrar Modificación
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- SECCIÓN 3: FOTOCOPIADORA - CARGA DIARIA -->
-        <section id="sec-fc-diaria" class="content-section hidden">
-            <div class="border-b border-slate-200 pb-4 mb-6">
-                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fas fa-calendar-plus text-indigo-600"></i> Carga Diaria de Copias
-                </h2>
-                <p class="text-sm text-slate-500">Registro periódico del volumen diario de impresiones/fotocopias.</p>
-            </div>
-
-            <form id="form-fc-diaria" onsubmit="guardarFotocopiadora(event, 'Carga Diaria')" class="max-w-xl space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-                    <input type="date" id="fc-diaria-fecha" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Hojas Utilizadas</label>
-                    <input type="number" id="fc-diaria-hojas" min="1" required placeholder="Ej: 350" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Motivo / Descripción</label>
-                    <input type="text" id="fc-diaria-motivo" placeholder="Ej: Impresiones administrativas generales" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Autorización</label>
-                    <input type="text" id="fc-diaria-autorizacion" required placeholder="Nombre del responsable" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                </div>
-                <div class="pt-2">
-                    <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm transition-colors shadow-sm flex items-center justify-center gap-2">
-                        <i class="fas fa-save"></i> Registrar Carga Diaria
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- SECCIÓN 4: FOTOCOPIADORA - VERIFICAR CONTADOR -->
-        <section id="sec-fc-verificar" class="content-section hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 mb-6 gap-4">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                        <i class="fas fa-calculator text-indigo-600"></i> Verificar Contador
-                    </h2>
-                    <p class="text-sm text-slate-500">Historial de registros en orden descendente con auditoría y cálculo de contador acumulado.</p>
-                </div>
-                <div class="bg-indigo-50 border border-indigo-200 px-4 py-2 rounded-xl text-right">
-                    <div class="text-xs font-semibold text-indigo-600 uppercase">Contador Actual Calculado</div>
-                    <div id="fc-total-actual-badge" class="text-xl font-black text-indigo-900">0</div>
-                </div>
-            </div>
-
-            <!-- Tabla de Registros -->
-            <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm">
-                <table class="w-full text-left text-sm text-slate-600">
-                    <thead class="bg-slate-50 text-slate-700 font-semibold uppercase text-xs border-b border-slate-200">
-                        <tr>
-                            <th class="py-3 px-4">Fecha</th>
-                            <th class="py-3 px-4">Tipo / Movimiento</th>
-                            <th class="py-3 px-4 text-right">Hojas / Mod.</th>
-                            <th class="py-3 px-4">Motivo</th>
-                            <th class="py-3 px-4">Autorización</th>
-                            <th class="py-3 px-4">Auditoría / Usuario</th>
-                            <th class="py-3 px-4 text-right bg-indigo-50 text-indigo-900 font-bold">Contador Acumulado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-fotocopiadora-body" class="divide-y divide-slate-200">
-                        <tr>
-                            <td colspan="7" class="py-8 text-center text-slate-400">
-                                <i class="fas fa-spinner fa-spin text-xl mb-2"></i>
-                                <p>Cargando información...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- SECCIÓN PERMISOS -->
-        <section id="sec-permisos" class="content-section hidden">
-            <div class="border-b border-slate-200 pb-4 mb-6">
-                <h2 class="text-xl font-bold text-slate-900">Matriz de Permisos y Roles</h2>
-                <p class="text-sm text-slate-500">Gestión de accesos para módulos del sistema.</p>
-            </div>
-            <div id="permisos-matrix-container" class="overflow-x-auto border border-slate-200 rounded-xl"></div>
-        </section>
-
-    </main>
-</div>
-
+<!-- Firebase Modular SDK -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, query, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Configuración Firebase anexada
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'hermes-suares-app';
-    const firebaseConfig = {
-        apiKey: "AIzaSyCewWkbjV2cb0nxZNks87pnpi-0Mea1sOM",
-        authDomain: "estacionamiento-cb321.firebaseapp.com",
-        projectId: "estacionamiento-cb321",
-        storageBucket: "estacionamiento-cb321.firebasestorage.app",
-        messagingSenderId: "110366474251",
-        appId: "1:110366474251:web:a37c8e46072e9c9d70c70e",
-        measurementId: "G-990MBSQ4BJ"
-    };
+// Exact Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBJMRBWEbLmjTjmMRUCLspfu6wp_zZoyk4",
+  authDomain: "chatweb-fc1c1.firebaseapp.com",
+  projectId: "chatweb-fc1c1",
+  storageBucket: "chatweb-fc1c1.firebasestorage.app",
+  messagingSenderId: "198864419928",
+  appId: "1:198864419928:web:cb82967f7bbaa262311e2d"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'chatweb-fc1c1-prod';
 
-    // Estado del Usuario Activo (Auditoría)
-    window.usuarioActual = {
-        usuario: "admin_hermes",
-        rol: "Administrador"
-    };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    // Autenticación en Firebase
-    async function initAuth() {
+const customToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+async function initFirebaseAuth() {
+    if (customToken) {
         try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        } catch (error) {
-            console.error("Error al autenticar:", error);
+            await signInWithCustomToken(auth, customToken);
+        } catch (err) {
+            try { await signInAnonymously(auth); } catch (anonErr) {}
         }
-    }
-
-    // Ruta de la colección de Fotocopiadora
-    const getFotocopiadoraCollection = () => {
-        return collection(db, 'artifacts', appId, 'public', 'data', 'fotocopiadora');
-    };
-
-    // Matriz de Configuración de Permisos
-    window.listaMenusPermisos = [
-        { id: 'sec-inicio', nombre: 'Inicio / Panel', rol: 'Todos' },
-        { id: 'sec-fc-inicial', nombre: 'Fotocopiadora: Carga inicial de copias', rol: 'Administrador' },
-        { id: 'sec-fc-modificacion', nombre: 'Fotocopiadora: Modificación', rol: 'Administrador' },
-        { id: 'sec-fc-diaria', nombre: 'Fotocopiadora: Carga diaria', rol: 'Operador' },
-        { id: 'sec-fc-verificar', nombre: 'Fotocopiadora: Verificar contador', rol: 'Operador' },
-        { id: 'sec-permisos', nombre: 'Configuración: Permisos y Roles', rol: 'Administrador' }
-    ];
-
-    // Escuchador en Tiempo Real para Fotocopiadora
-    let unsubscribeFotocopiadora = null;
-
-    function listenFotocopiadoraData() {
-        const colRef = getFotocopiadoraCollection();
-        
-        unsubscribeFotocopiadora = onSnapshot(colRef, (snapshot) => {
-            const docs = [];
-            snapshot.forEach(doc => {
-                docs.push({ id: doc.id, ...doc.data() });
-            });
-            renderTablaFotocopiadora(docs);
-        }, (error) => {
-            console.error("Error consultando Fotocopiadora:", error);
-            showCustomModal("Error", "No se pudieron obtener los registros de la base de datos.");
-        });
-    }
-
-    // Procesar y calcular contadores acumulados
-    function renderTablaFotocopiadora(registros) {
-        const tbody = document.getElementById('tabla-fotocopiadora-body');
-        const badgeContador = document.getElementById('fc-total-actual-badge');
-        const dashContador = document.getElementById('dash-contador-total');
-
-        if (!registros || registros.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="py-8 text-center text-slate-400">
-                        No hay registros guardados en el sistema de fotocopiadora.
-                    </td>
-                </tr>`;
-            if (badgeContador) badgeContador.textContent = '0';
-            if (dashContador) dashContador.textContent = '0';
-            return;
-        }
-
-        // Ordenar Cronológicamente (Ascendente) para acumular correctamente
-        const registrosAsc = [...registros].sort((a, b) => {
-            const dateA = new Date(a.fecha || 0);
-            const dateB = new Date(b.fecha || 0);
-            if (dateA.getTime() !== dateB.getTime()) return dateA.getTime() - dateB.getTime();
-            return (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0);
-        });
-
-        let contadorAcumulado = 0;
-        const registrosCalculados = registrosAsc.map(reg => {
-            const cantidad = parseInt(reg.hojas || reg.contador || 0, 10);
-            
-            if (reg.tipo === 'Carga Inicial') {
-                contadorAcumulado = cantidad;
-            } else if (reg.tipo === 'Carga Diaria' || reg.tipo === 'Modificación') {
-                contadorAcumulado += cantidad;
-            }
-
-            return {
-                ...reg,
-                contadorCalculado: contadorAcumulado
-            };
-        });
-
-        // Ordenar de nuevo en Fecha Descendente para la vista del usuario
-        const registrosDesc = registrosCalculados.sort((a, b) => {
-            const dateA = new Date(a.fecha || 0);
-            const dateB = new Date(b.fecha || 0);
-            if (dateA.getTime() !== dateB.getTime()) return dateB.getTime() - dateA.getTime();
-            return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
-        });
-
-        // Actualizar badges
-        const ultimoValor = contadorAcumulado;
-        if (badgeContador) badgeContador.textContent = ultimoValor.toLocaleString();
-        if (dashContador) dashContador.textContent = ultimoValor.toLocaleString();
-
-        // Renderizar Filas de Tabla
-        tbody.innerHTML = registrosDesc.map(item => {
-            const valHojas = parseInt(item.hojas || item.contador || 0, 10);
-            let badgeColor = 'bg-slate-100 text-slate-700';
-            let sign = '';
-
-            if (item.tipo === 'Carga Inicial') {
-                badgeColor = 'bg-blue-100 text-blue-800 font-semibold';
-            } else if (item.tipo === 'Carga Diaria') {
-                badgeColor = 'bg-emerald-100 text-emerald-800';
-                sign = '+';
-            } else if (item.tipo === 'Modificación') {
-                badgeColor = valHojas >= 0 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
-                sign = valHojas > 0 ? '+' : '';
-            }
-
-            return `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="py-3 px-4 font-medium text-slate-900">${item.fecha || '-'}</td>
-                    <td class="py-3 px-4">
-                        <span class="inline-block px-2.5 py-1 rounded-lg text-xs ${badgeColor}">
-                            ${item.tipo || 'Registro'}
-                        </span>
-                    </td>
-                    <td class="py-3 px-4 text-right font-mono font-semibold">
-                        ${sign}${valHojas.toLocaleString()}
-                    </td>
-                    <td class="py-3 px-4 text-slate-600 max-w-xs truncate">${item.motivo || '-'}</td>
-                    <td class="py-3 px-4 text-slate-700">${item.autorizacion || '-'}</td>
-                    <td class="py-3 px-4">
-                        <div class="flex items-center gap-1.5 text-xs text-indigo-700 font-medium">
-                            <i class="fas fa-user-circle"></i>
-                            <span>${item.usuarioAuditoria || 'Sin usuario'}</span>
-                        </div>
-                    </td>
-                    <td class="py-3 px-4 text-right font-mono font-bold text-indigo-900 bg-indigo-50/50">
-                        ${item.contadorCalculado.toLocaleString()}
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    // Guardar Registros de Fotocopiadora
-    window.guardarFotocopiadora = async function(event, tipo) {
-        event.preventDefault();
-        
-        let fecha = '';
-        let hojasOrContador = 0;
-        let motivo = '';
-        let autorizacion = '';
-
-        if (tipo === 'Carga Inicial') {
-            fecha = document.getElementById('fc-inicial-fecha').value;
-            hojasOrContador = parseInt(document.getElementById('fc-inicial-contador').value, 10);
-            autorizacion = document.getElementById('fc-inicial-autorizacion').value;
-            motivo = 'Carga inicial del contador';
-        } else if (tipo === 'Modificación') {
-            fecha = document.getElementById('fc-mod-fecha').value;
-            hojasOrContador = parseInt(document.getElementById('fc-mod-hojas').value, 10);
-            motivo = document.getElementById('fc-mod-motivo').value;
-            autorizacion = document.getElementById('fc-mod-autorizacion').value;
-        } else if (tipo === 'Carga Diaria') {
-            fecha = document.getElementById('fc-diaria-fecha').value;
-            hojasOrContador = parseInt(document.getElementById('fc-diaria-hojas').value, 10);
-            motivo = document.getElementById('fc-diaria-motivo').value || 'Lectura de uso diario';
-            autorizacion = document.getElementById('fc-diaria-autorizacion').value;
-        }
-
-        // Auditoría requerida con el usuario activo logueado
-        const usuarioSesion = window.usuarioActual?.usuario || 'Sin usuario';
-
-        const registroData = {
-            fecha: fecha,
-            tipo: tipo,
-            hojas: hojasOrContador,
-            contador: hojasOrContador,
-            motivo: motivo,
-            autorizacion: autorizacion,
-            usuarioAuditoria: usuarioSesion,
-            createdAt: serverTimestamp()
-        };
-
+    } else {
         try {
-            // Guardar en Firestore
-            await addDoc(getFotocopiadoraCollection(), registroData);
-            
-            showCustomModal("¡Éxito!", `El registro de ${tipo} ha sido guardado correctamente.`);
-            
-            // Limpiar formulario correspondiente
-            if (tipo === 'Carga Inicial') document.getElementById('form-fc-inicial').reset();
-            if (tipo === 'Modificación') document.getElementById('form-fc-modificacion').reset();
-            if (tipo === 'Carga Diaria') document.getElementById('form-fc-diaria').reset();
+            await signInAnonymously(auth);
+        } catch (anonErr) {}
+    }
+}
 
-            // Redireccionar automáticamente a la vista de verificación de contador
-            showSection('sec-fc-verificar');
+initFirebaseAuth();
 
-        } catch (error) {
-            console.error("Error guardando en Firestore:", error);
-            showCustomModal("Error", "No se pudo completar el registro en la base de datos.");
-        }
-    };
-
-    // Inicializar Auth y Firestore Listener
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            listenFotocopiadoraData();
-        }
-    });
-
-    initAuth();
+// Expose globally for React code
+window.fb = { db, auth, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, query, limit, appId };
 </script>
 
-<script>
-    // Inicialización de Fechas por Defecto en los formularios
-    document.addEventListener('DOMContentLoaded', () => {
-        const today = new Date().toISOString().split('T')[0];
-        ['fc-inicial-fecha', 'fc-mod-fecha', 'fc-diaria-fecha'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) input.value = today;
-        });
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
 
-        renderMatrizPermisos();
+// --- SVG ICON COMPONENTS ---
+const EyeIcon = ({ show }) => show ? (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/></svg>
+) : (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+);
+
+const PaperclipIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+);
+
+const SendIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+);
+
+const LockIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+);
+
+const SettingsIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+);
+
+// --- DEFAULT INITIAL STATE DATA ---
+const DEFAULT_CHATBOT_NODES = {
+    start: {
+        id: "start",
+        title: "Menú Principal",
+        text: "¡Hola! Bienvenid@ a nuestro centro de atención inteligente. Por favor, elige una opción:",
+        options: [
+            { label: "📦 Estado de mi Pedido", next: "pedido" },
+            { label: "💳 Consultas de Facturación", next: "facturacion" },
+            { label: "⚠️ Realizar un Reclamo", next: "reclamo" },
+            { label: "🧑‍💻 Asistencia Humana Directa", next: "derivacion_directa" }
+        ]
+    },
+    pedido: {
+        id: "pedido",
+        title: "Consultas de Pedido",
+        text: "Selecciona el tipo de consulta sobre tus pedidos activos:",
+        options: [
+            { label: "🚚 Seguimiento e historial de envío", next: "pedido_seguimiento" },
+            { label: "🔄 Solicitar cambio o devolución", deriveTo: "Atención al público" },
+            { label: "⬅️ Volver al menú principal", next: "start" }
+        ]
+    },
+    pedido_seguimiento: {
+        id: "pedido_seguimiento",
+        title: "Seguimiento",
+        text: "Los envíos se procesan habitualmente en 24-48 hrs. ¿Deseas verificar con un representante?",
+        options: [
+            { label: "🎧 Hablar con Atención al Público", deriveTo: "Atención al público" },
+            { label: "⬅️ Regresar", next: "start" }
+        ]
+    },
+    facturacion: {
+        id: "facturacion",
+        title: "Facturación",
+        text: "Gestión de recibos, pagos y comprobantes fiscales.",
+        options: [
+            { label: "📄 Solicitar Factura A/B", deriveTo: "Administrativo" },
+            { label: "🏛️ Confirmación de Transferencia", deriveTo: "Administrativo" },
+            { label: "⬅️ Volver", next: "start" }
+        ]
+    },
+    reclamo: {
+        id: "reclamo",
+        title: "Gestión de Reclamos",
+        text: "Sentimos los inconvenientes. Selecciona una categoría para conectarte de inmediato:",
+        options: [
+            { label: "🚨 Producto Defectuoso / Incompleto", deriveTo: "Reclamos" },
+            { label: "⏳ Retraso de Entrega Excesivo", deriveTo: "Reclamos" },
+            { label: "⬅️ Inicio", next: "start" }
+        ]
+    },
+    derivacion_directa: {
+        id: "derivacion_directa",
+        title: "Derivación Directa",
+        text: "¿Con qué área deseas comunicarte?",
+        options: [
+            { label: "👥 Atención al Público", deriveTo: "Atención al público" },
+            { label: "💼 Área Administrativa", deriveTo: "Administrativo" },
+            { label: "🚨 Oficina de Reclamos", deriveTo: "Reclamos" },
+            { label: "⬅️ Volver", next: "start" }
+        ]
+    }
+};
+
+const DEFAULT_USERS = [
+    { id: 'usr_hermes', username: "hermes", passwordHash: "Hjs2154", role: "Diseñador", name: "Hermes (Diseñador System)" },
+    { id: 'usr_marta', username: "marta_admin", passwordHash: "Admin123", role: "Administrativo", name: "Marta Gómez" },
+    { id: 'usr_juan', username: "juan_reclamos", passwordHash: "Reclamos123", role: "Reclamos", name: "Juan Pérez" },
+    { id: 'usr_lucia', username: "lucia_atencion", passwordHash: "Atencion123", role: "Atención al público", name: "Lucía Fernández" }
+];
+
+function App() {
+    // --- AUTHENTICATION PERSISTENT STATE ---
+    // Default to Guest immediately if no user stored
+    const [currentUser, setCurrentUser] = useState(() => {
+        try {
+            const saved = localStorage.getItem('chat_app_session_v3');
+            return saved ? JSON.parse(saved) : { role: 'Cliente', name: 'Usuario Invitado', isGuest: true };
+        } catch(e) { 
+            return { role: 'Cliente', name: 'Usuario Invitado', isGuest: true }; 
+        }
     });
 
-    // Control del Menú Desplegable / Submenús
-    function toggleSubmenu(id) {
-        const submenu = document.getElementById(id);
-        const arrow = document.getElementById('arrow-' + id);
-        if (submenu) {
-            submenu.classList.toggle('hidden');
-            if (arrow) {
-                arrow.classList.toggle('rotate-180');
+    // Hidden Operator Login Modal
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [authTab, setAuthTab] = useState('staff'); // 'staff', 'designer', 'login'
+    
+    const [loginDni, setLoginDni] = useState('');
+    const [loginEmail, setLoginEmail] = useState('');
+    const [loginName, setLoginName] = useState('');
+    const [designerUser, setDesignerUser] = useState('');
+    const [designerPass, setDesignerPass] = useState('');
+    const [selectedStaffId, setSelectedStaffId] = useState('');
+    const [staffPassInput, setStaffPassInput] = useState('');
+    const [loginError, setLoginError] = useState('');
+    
+    // Password toggles
+    const [showDesignerPass, setShowDesignerPass] = useState(false);
+    const [showStaffPass, setShowStaffPass] = useState(false);
+    const [showNewUserPass, setShowNewUserPass] = useState(false);
+
+    // --- REALTIME FIREBASE STATES ---
+    const [chatbotNodes, setChatbotNodes] = useState(DEFAULT_CHATBOT_NODES);
+    const [systemUsers, setSystemUsers] = useState(DEFAULT_USERS);
+    const [clientMessages, setClientMessages] = useState([]);
+    const [internalMessages, setInternalMessages] = useState([]);
+    const [fbConnected, setFbConnected] = useState(false);
+
+    // Active Navigation
+    const [activeTab, setActiveTab] = useState('client'); // 'client', 'internal', 'admin'
+    const [designerSubTab, setDesignerSubTab] = useState('editor'); // 'editor', 'users'
+
+    // Bot Flow Builder
+    const [selectedNodeId, setSelectedNodeId] = useState('start');
+    const [editingNode, setEditingNode] = useState(null);
+    const [toastMessage, setToastMessage] = useState('');
+
+    // Chat states
+    const [assignedOperator, setAssignedOperator] = useState(null);
+    const [isBotActive, setIsBotActive] = useState(true);
+    const [inputClientMsg, setInputClientMsg] = useState('');
+    const [clientImagePreview, setClientImagePreview] = useState(null);
+
+    // Internal Chat states
+    const [internalInput, setInternalInput] = useState('');
+    const [internalImagePreview, setInternalImagePreview] = useState(null);
+
+    // Lightbox image state
+    const [lightboxImg, setLightboxImg] = useState(null);
+
+    // Password visibility in admin panel list
+    const [revealedPasswords, setRevealedPasswords] = useState({});
+
+    // New User Registration Form in Admin Panel
+    const [newUserForm, setNewUserForm] = useState({
+        username: '',
+        name: '',
+        password: '',
+        role: 'Atención al público'
+    });
+
+    const chatEndRef = useRef(null);
+    const internalEndRef = useRef(null);
+
+    // Check if user is staff
+    const isStaff = currentUser && currentUser.role !== 'Cliente';
+
+    // Helper Toast
+    const showToast = (msg) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(''), 3500);
+    };
+
+    useEffect(() => {
+        let unsubBot = () => {};
+        let unsubUsers = () => {};
+        let unsubClientMsgs = () => {};
+        let unsubInternalMsgs = () => {};
+
+        const setupSubscriptions = () => {
+            if (!window.fb || !window.fb.db) {
+                setTimeout(setupSubscriptions, 250);
+                return;
+            }
+
+            const { db, doc, collection, onSnapshot, setDoc, appId } = window.fb;
+            setFbConnected(true);
+
+            // 1. Chatbot Nodes Tree Listener
+            const botDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'chatbot_config', 'tree_v3');
+            unsubBot = onSnapshot(botDocRef, (snap) => {
+                if (snap.exists() && snap.data().nodes) {
+                    setChatbotNodes(snap.data().nodes);
+                } else {
+                    setDoc(botDocRef, { nodes: DEFAULT_CHATBOT_NODES }).catch(e => {
+                        setChatbotNodes(DEFAULT_CHATBOT_NODES);
+                    });
+                }
+            }, err => {
+                setChatbotNodes(DEFAULT_CHATBOT_NODES);
+            });
+
+            // 2. System Staff Users Listener
+            const usersCollRef = collection(db, 'artifacts', appId, 'public', 'data', 'system_users_v3');
+            unsubUsers = onSnapshot(usersCollRef, (snap) => {
+                if (!snap.empty) {
+                    const list = [];
+                    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+                    setSystemUsers(list);
+                } else {
+                    DEFAULT_USERS.forEach(u => {
+                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system_users_v3', u.id), u).catch(e => {});
+                    });
+                }
+            }, err => {
+                setSystemUsers(DEFAULT_USERS);
+            });
+
+            // 3. Client Messages Listener
+            const clientCollRef = collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3');
+            unsubClientMsgs = onSnapshot(clientCollRef, (snap) => {
+                const msgs = [];
+                snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+                msgs.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                setClientMessages(msgs);
+            }, err => {});
+
+            // 4. Internal Private Messages Listener
+            const internalCollRef = collection(db, 'artifacts', appId, 'public', 'data', 'internal_chat_messages_v3');
+            unsubInternalMsgs = onSnapshot(internalCollRef, (snap) => {
+                const msgs = [];
+                snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+                msgs.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                setInternalMessages(msgs);
+            }, err => {});
+        };
+
+        setupSubscriptions();
+
+        return () => {
+            unsubBot();
+            unsubUsers();
+            unsubClientMsgs();
+            unsubInternalMsgs();
+        };
+    }, []);
+
+    // Initial greeting in client chat EXACTLY ONCE
+    useEffect(() => {
+        if (clientMessages.length === 0 && chatbotNodes.start) {
+            const initialWelcomeMsg = {
+                id: 'init_welcome_start',
+                sender: 'bot',
+                text: chatbotNodes.start.text,
+                options: chatbotNodes.start.options,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                createdAt: Date.now()
+            };
+
+            if (window.fb && window.fb.db) {
+                const { db, collection, addDoc, appId } = window.fb;
+                addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3'), initialWelcomeMsg)
+                    .catch(() => setClientMessages([initialWelcomeMsg]));
+            } else {
+                setClientMessages([initialWelcomeMsg]);
             }
         }
-    }
+    }, [chatbotNodes]);
 
-    // Navegación entre Secciones
-    function showSection(sectionId) {
-        // Ocultar todas las secciones
-        const sections = document.querySelectorAll('.content-section');
-        sections.forEach(s => s.classList.add('hidden'));
+    // Keep node editor in sync
+    useEffect(() => {
+        if (chatbotNodes[selectedNodeId]) {
+            setEditingNode(JSON.parse(JSON.stringify(chatbotNodes[selectedNodeId])));
+        } else if (chatbotNodes['start']) {
+            setSelectedNodeId('start');
+            setEditingNode(JSON.parse(JSON.stringify(chatbotNodes['start'])));
+        }
+    }, [selectedNodeId, chatbotNodes]);
 
-        // Mostrar sección requerida
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-            targetSection.classList.remove('hidden');
+    // Auto-scroll
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [clientMessages]);
+
+    useEffect(() => {
+        internalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [internalMessages]);
+
+    // LOGIN & AUTHENTICATION HANDLERS
+    const saveSession = (userObj) => {
+        try {
+            localStorage.setItem('chat_app_session_v3', JSON.stringify(userObj));
+        } catch(e) {}
+        setCurrentUser(userObj);
+        setLoginError('');
+        setIsLoginModalOpen(false);
+    };
+
+    const handleRegisteredSubmit = (e) => {
+        e.preventDefault();
+        if (!loginDni.trim() || !loginEmail.trim() || !loginName.trim()) {
+            setLoginError('Todos los campos son obligatorios.');
+            return;
+        }
+        saveSession({
+            role: 'Cliente',
+            dni: loginDni.trim(),
+            email: loginEmail.trim(),
+            name: loginName.trim(),
+            isGuest: false
+        });
+        setActiveTab('client');
+    };
+
+    const handleDesignerSubmit = (e) => {
+        e.preventDefault();
+        if (designerUser === 'hermes' && designerPass === 'Hjs2154') {
+            saveSession({
+                role: 'Diseñador',
+                username: 'hermes',
+                name: 'Hermes (Diseñador System)',
+                isGuest: false
+            });
+            setActiveTab('admin');
+        } else {
+            setLoginError('Usuario o contraseña de Diseñador incorrectos.');
+        }
+    };
+
+    const handleStaffSubmit = (e) => {
+        e.preventDefault();
+        const found = systemUsers.find(u => u.id === selectedStaffId);
+        if (!found) {
+            setLoginError('Selecciona un usuario válido.');
+            return;
+        }
+        if (found.passwordHash && staffPassInput !== found.passwordHash) {
+            setLoginError('Contraseña de usuario incorrecta.');
+            return;
+        }
+        saveSession({
+            role: found.role,
+            username: found.username,
+            name: found.name,
+            isGuest: false
+        });
+        setActiveTab('internal');
+    };
+
+    const handleLogout = () => {
+        const guestUser = { role: 'Cliente', name: 'Usuario Invitado', isGuest: true };
+        try { localStorage.setItem('chat_app_session_v3', JSON.stringify(guestUser)); } catch(e) {}
+        setCurrentUser(guestUser);
+        setActiveTab('client');
+        setLoginError('');
+    };
+
+    const handleOptionClick = async (option) => {
+        const now = Date.now();
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const userMsg = {
+            id: `msg_${now}`,
+            sender: 'user',
+            text: option.label,
+            time: timeStr,
+            createdAt: now
+        };
+
+        if (window.fb && window.fb.db) {
+            const { db, collection, addDoc, appId } = window.fb;
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3');
+            addDoc(colRef, userMsg).catch(() => {
+                setClientMessages(prev => [...prev, userMsg]);
+            });
+        } else {
+            setClientMessages(prev => [...prev, userMsg]);
         }
 
-        // Actualizar estados visuales de los botones
-        const navBtns = document.querySelectorAll('.nav-btn');
-        navBtns.forEach(btn => {
-            btn.classList.remove('bg-indigo-50', 'text-indigo-600', 'font-semibold');
-        });
+        // Check if option triggers operator derivation
+        if (option.deriveTo) {
+            const activeOp = systemUsers.find(u => u.role === option.deriveTo) || { name: 'Operador Especializado', role: option.deriveTo };
+            
+            setAssignedOperator(activeOp);
+            setIsBotActive(false);
 
-        // Ocultar menú en móvil tras seleccionar
-        const sidebar = document.getElementById('sidebar');
-        if (window.innerWidth < 1024 && sidebar) {
-            sidebar.classList.add('hidden');
+            const sysMsg = {
+                id: `sys_${now+1}`,
+                sender: 'system',
+                text: `🔄 Derivando a un representante en línea del área de **${option.deriveTo}**...`,
+                time: timeStr,
+                createdAt: now + 1
+            };
+
+            const opMsg = {
+                id: `op_${now+2}`,
+                sender: 'operator',
+                operatorName: activeOp.name,
+                operatorRole: activeOp.role,
+                text: `¡Hola ${currentUser?.name || ''}! Soy ${activeOp.name} del departamento de ${option.deriveTo}. ¿Cómo puedo ayudarte hoy?`,
+                time: timeStr,
+                createdAt: now + 2
+            };
+
+            // MODIFICACIÓN: Si es invitado, NO guardar en Firebase Firestore
+            if (!currentUser?.isGuest && window.fb && window.fb.db) {
+                const { db, collection, addDoc, appId } = window.fb;
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3');
+                addDoc(colRef, sysMsg).catch(() => setClientMessages(prev => [...prev, sysMsg]));
+                addDoc(colRef, opMsg).catch(() => setClientMessages(prev => [...prev, opMsg]));
+            } else {
+                setClientMessages(prev => [...prev, sysMsg, opMsg]);
+            }
+
+        } else if (option.next && chatbotNodes[option.next]) {
+            const nextNode = chatbotNodes[option.next];
+            const botReply = {
+                id: `bot_${now+1}`,
+                sender: 'bot',
+                text: nextNode.text,
+                options: nextNode.options,
+                time: timeStr,
+                createdAt: now + 1
+            };
+
+            // MODIFICACIÓN: Si es invitado, NO guardar en Firebase Firestore
+            if (!currentUser?.isGuest && window.fb && window.fb.db) {
+                const { db, collection, addDoc, appId } = window.fb;
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3');
+                addDoc(colRef, botReply).catch(() => setClientMessages(prev => [...prev, botReply]));
+            } else {
+                setClientMessages(prev => [...prev, botReply]);
+            }
         }
-    }
+    };
 
-    // Modal Personalizado (Reemplazo seguro de alert)
-    function showCustomModal(title, message, iconClass = "fas fa-info-circle") {
-        document.getElementById('modal-title').textContent = title;
-        document.getElementById('modal-message').textContent = message;
-        document.getElementById('modal-icon').className = `${iconClass} text-2xl`;
-        document.getElementById('custom-modal').classList.remove('hidden');
-    }
+    const handleRestartBot = async () => {
+        setIsBotActive(true);
+        setAssignedOperator(null);
+        const newMsg = {
+            id: `bot_reset_${Date.now()}`,
+            sender: 'bot',
+            text: "Has reiniciado el asistente. " + (chatbotNodes.start ? chatbotNodes.start.text : ""),
+            options: chatbotNodes.start ? chatbotNodes.start.options : [],
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            createdAt: Date.now()
+        };
 
-    function closeCustomModal() {
-        document.getElementById('custom-modal').classList.add('hidden');
-    }
+        // MODIFICACIÓN: Si es invitado, reiniciar en memoria local únicamente
+        if (!currentUser?.isGuest && window.fb && window.fb.db) {
+            const { db, collection, addDoc, appId } = window.fb;
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3'), newMsg);
+        } else {
+            setClientMessages([newMsg]);
+        }
+    };
 
-    // Renderizar la Matriz de Permisos
-    function renderMatrizPermisos() {
-        const container = document.getElementById('permisos-matrix-container');
-        if (!container || !window.listaMenusPermisos) return;
+    // IMAGE FILE UPLOAD TO BASE64
+    const handleImageUpload = (e, setPreview) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2.5 * 1024 * 1024) {
+            alert("La imagen es demasiado grande. Por favor elige una menor a 2.5MB.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result);
+        reader.readAsDataURL(file);
+    };
 
-        let html = `
-            <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-50 text-slate-700 uppercase text-xs border-b border-slate-200">
-                    <tr>
-                        <th class="py-3 px-4">Módulo / Sección</th>
-                        <th class="py-3 px-4">Rol Asignado</th>
-                        <th class="py-3 px-4 text-center">Estado</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-        `;
+    // SEND MESSAGES TO FIRESTORE
+    const handleSendClientMessage = async (e) => {
+        e.preventDefault();
+        if (!inputClientMsg.trim() && !clientImagePreview) return;
 
-        window.listaMenusPermisos.forEach(item => {
-            html += `
-                <tr>
-                    <td class="py-3 px-4 font-medium text-slate-900">${item.nombre}</td>
-                    <td class="py-3 px-4"><span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold">${item.rol}</span></td>
-                    <td class="py-3 px-4 text-center"><i class="fas fa-check-circle text-emerald-500"></i> Active</td>
-                </tr>
-            `;
+        const now = Date.now();
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const newMsg = {
+            id: `msg_${now}`,
+            sender: 'user',
+            userName: currentUser?.name || 'Cliente',
+            text: inputClientMsg.trim(),
+            image: clientImagePreview || null,
+            time: timeStr,
+            createdAt: now
+        };
+
+        // MODIFICACIÓN CRÍTICA: Los usuarios invitados NO guardan registros en Firebase Firestore
+        if (!currentUser?.isGuest && window.fb && window.fb.db) {
+            const { db, collection, addDoc, appId } = window.fb;
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3');
+            addDoc(colRef, newMsg).catch(() => {
+                setClientMessages(prev => [...prev, newMsg]);
+            });
+        } else {
+            setClientMessages(prev => [...prev, newMsg]);
+        }
+
+        setInputClientMsg('');
+        setClientImagePreview(null);
+
+        if (!isBotActive && assignedOperator) {
+            setTimeout(async () => {
+                const autoOpReply = {
+                    id: `op_${Date.now()}`,
+                    sender: 'operator',
+                    operatorName: assignedOperator.name,
+                    operatorRole: assignedOperator.role,
+                    text: `Recibido. Estamos analizando tu consulta e imagen.`,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    createdAt: Date.now()
+                };
+
+                if (!currentUser?.isGuest && window.fb && window.fb.db) {
+                    const { db, collection, addDoc, appId } = window.fb;
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'client_chat_messages_v3');
+                    addDoc(colRef, autoOpReply).catch(() => {
+                        setClientMessages(prev => [...prev, autoOpReply]);
+                    });
+                } else {
+                    setClientMessages(prev => [...prev, autoOpReply]);
+                }
+            }, 1100);
+        }
+    };
+
+    const handleSendInternalMessage = async (e) => {
+        e.preventDefault();
+        if (!internalInput.trim() && !internalImagePreview) return;
+
+        const newInternalMsg = {
+            id: `int_${Date.now()}`,
+            sender: currentUser?.name || 'Operador',
+            role: currentUser?.role || 'Staff',
+            text: internalInput.trim(),
+            image: internalImagePreview || null,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            createdAt: Date.now()
+        };
+
+        if (window.fb && window.fb.db) {
+            const { db, collection, addDoc, appId } = window.fb;
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'internal_chat_messages_v3');
+            addDoc(colRef, newInternalMsg).catch(() => {
+                setInternalMessages(prev => [...prev, newInternalMsg]);
+            });
+        } else {
+            setInternalMessages(prev => [...prev, newInternalMsg]);
+        }
+
+        setInternalInput('');
+        setInternalImagePreview(null);
+    };
+
+    const saveNodesToFirebase = async (updatedNodes) => {
+        if (!window.fb) return;
+        const { db, doc, setDoc, appId } = window.fb;
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chatbot_config', 'tree_v3'), {
+            nodes: updatedNodes
         });
+    };
 
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-    }
+    const handleCreateNewNode = () => {
+        const newId = `respuesta_${Date.now()}`;
+        const newObj = {
+            id: newId,
+            title: "Nueva Respuesta / Nodo",
+            text: "Escribe aquí la respuesta del chatbot...",
+            options: []
+        };
+        const updated = { ...chatbotNodes, [newId]: newObj };
+        setChatbotNodes(updated);
+        setSelectedNodeId(newId);
+        saveNodesToFirebase(updated);
+        showToast('✨ Nuevo nodo creado y guardado.');
+    };
 
-    // Toggle Sidebar Móvil
-    document.getElementById('toggle-sidebar-btn').addEventListener('click', () => {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) sidebar.classList.toggle('hidden');
-    });
+    const handleSaveNodeChanges = async () => {
+        if (!editingNode) return;
+        const updated = {
+            ...chatbotNodes,
+            [editingNode.id]: editingNode
+        };
+        setChatbotNodes(updated);
+        await saveNodesToFirebase(updated);
+        showToast('💾 ¡Opciones y respuestas guardadas con éxito!');
+    };
+
+    const handleDeleteNode = async (nodeId) => {
+        if (nodeId === 'start') {
+            alert('El nodo inicial (start) no puede eliminarse.');
+            return;
+        }
+        const copy = { ...chatbotNodes };
+        delete copy[nodeId];
+        setChatbotNodes(copy);
+        setSelectedNodeId('start');
+        await saveNodesToFirebase(copy);
+        showToast('🗑️ Nodo eliminado con éxito.');
+    };
+
+    const handleAddOptionToEditingNode = () => {
+        const newOpt = { label: "Nueva Opción Custom", next: "start" };
+        setEditingNode(prev => ({
+            ...prev,
+            options: [...(prev.options || []), newOpt]
+        }));
+    };
+
+    const handleUpdateOption = (index, field, value) => {
+        const updated = [...editingNode.options];
+        if (field === 'actionType') {
+            if (value === 'derive') {
+                delete updated[index].next;
+                updated[index].deriveTo = 'Atención al público';
+            } else {
+                delete updated[index].deriveTo;
+                updated[index].next = 'start';
+            }
+        } else {
+            updated[index][field] = value;
+        }
+        setEditingNode({ ...editingNode, options: updated });
+    };
+
+    const handleRemoveOption = (index) => {
+        setEditingNode({
+            ...editingNode,
+            options: editingNode.options.filter((_, idx) => idx !== index)
+        });
+    };
+
+    // CREATE STAFF USER (DESIGNER MODE)
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
+        if (!newUserForm.username || !newUserForm.name || !newUserForm.password || !window.fb) return;
+
+        const { db, doc, setDoc, appId } = window.fb;
+        const newId = `usr_${Date.now()}`;
+        const newUserObj = {
+            id: newId,
+            username: newUserForm.username.toLowerCase().replace(/\s+/g, '_'),
+            name: newUserForm.name,
+            passwordHash: newUserForm.password,
+            role: newUserForm.role
+        };
+
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system_users_v3', newId), newUserObj);
+        setNewUserForm({ username: '', name: '', password: '', role: 'Atención al público' });
+        showToast(`👤 Usuario ${newUserObj.name} (${newUserObj.role}) creado exitosamente.`);
+    };
+
+    const togglePasswordMask = (id) => {
+        setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    return (
+        <div className="flex flex-col h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-800">
+            
+            {/* FULLSCREEN LIGHTBOX MODAL FOR IMAGES */}
+            {lightboxImg && (
+                <div 
+                    onClick={() => setLightboxImg(null)}
+                    className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer animate-fade-in">
+                    <img src={lightboxImg} alt="Ampliada" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border-2 border-white" />
+                    <button className="absolute top-4 right-4 text-slate-700 bg-white hover:bg-slate-100 w-10 h-10 rounded-full flex items-center justify-center shadow-lg font-bold text-xl">
+                        ✕
+                    </button>
+                </div>
+            )}
+
+            {/* TOAST NOTIFICATION */}
+            {toastMessage && (
+                <div className="fixed bottom-5 right-5 z-40 bg-sky-600 text-white px-5 py-3.5 rounded-2xl shadow-xl border border-sky-400 text-xs font-bold flex items-center space-x-2 animate-fade-in">
+                    <span>⚡</span>
+                    <span>{toastMessage}</span>
+                </div>
+            )}
+
+            {/* HIDDEN OPERATOR & DISCREET LOGIN MODAL */}
+            {isLoginModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-white/95 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-sky-100 relative">
+                        <button 
+                            onClick={() => setIsLoginModalOpen(false)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-lg p-1">
+                            ✕
+                        </button>
+
+                        <div className="bg-gradient-to-r from-sky-600 to-blue-700 p-5 text-white text-center">
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl shadow-inner border border-white/30">
+                                🔒
+                            </div>
+                            <h3 className="text-lg font-extrabold">Acceso Restringido</h3>
+                            <p className="text-sky-100 text-[11px]">Ingreso de Operadores & Diseñador</p>
+                        </div>
+
+                        {/* Auth Sub-tabs */}
+                        <div className="grid grid-cols-3 border-b border-sky-100 bg-sky-50/80 text-[11px] font-extrabold uppercase tracking-wider">
+                            <button 
+                                onClick={() => { setAuthTab('staff'); setLoginError(''); }}
+                                className={`py-3 text-center transition-all ${authTab === 'staff' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                Staff
+                            </button>
+                            <button 
+                                onClick={() => { setAuthTab('designer'); setLoginError(''); }}
+                                className={`py-3 text-center transition-all ${authTab === 'designer' ? 'text-purple-600 border-b-2 border-purple-600 bg-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                Diseñador
+                            </button>
+                            <button 
+                                onClick={() => { setAuthTab('login'); setLoginError(''); }}
+                                className={`py-3 text-center transition-all ${authTab === 'login' ? 'text-blue-600 border-b-2 border-blue-600 bg-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                Registro
+                            </button>
+                        </div>
+
+                        <div className="p-5">
+                            {loginError && (
+                                <div className="mb-3 p-2.5 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl flex items-center space-x-2 font-medium">
+                                    <span>⚠️</span>
+                                    <span>{loginError}</span>
+                                </div>
+                            )}
+
+                            {/* STAFF LOGIN */}
+                            {authTab === 'staff' && (
+                                <form onSubmit={handleStaffSubmit} className="space-y-3.5" autoComplete="off">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Operador / Personal</label>
+                                        <select 
+                                            value={selectedStaffId}
+                                            onChange={e => setSelectedStaffId(e.target.value)}
+                                            className="w-full px-3.5 py-2 bg-slate-50 border border-emerald-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-emerald-400">
+                                            <option value="">-- Seleccionar Operador --</option>
+                                            {systemUsers.filter(u => u.role !== 'Diseñador').map(u => (
+                                                <option key={u.id} value={u.id}>
+                                                    {u.name} ({u.role})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Contraseña</label>
+                                        <div className="relative">
+                                            <input 
+                                                type={showStaffPass ? "text" : "password"} 
+                                                autoComplete="new-password"
+                                                value={staffPassInput}
+                                                onChange={e => setStaffPassInput(e.target.value)}
+                                                placeholder="••••••••" 
+                                                className="w-full px-3.5 py-2 bg-slate-50 border border-emerald-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-emerald-400 pr-10"
+                                            />
+                                            <button 
+                                                type="button"
+                                                onClick={() => setShowStaffPass(!showStaffPass)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                                <EyeIcon show={showStaffPass} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="w-full py-3 text-white font-bold rounded-2xl text-xs btn-3d-emerald">
+                                        Ingresar Staff
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* DESIGNER LOGIN */}
+                            {authTab === 'designer' && (
+                                <form onSubmit={handleDesignerSubmit} className="space-y-3.5" autoComplete="off">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Usuario Diseñador</label>
+                                        <input 
+                                            type="text" 
+                                            autoComplete="off"
+                                            value={designerUser} 
+                                            onChange={e => setDesignerUser(e.target.value)}
+                                            placeholder="hermes" 
+                                            className="w-full px-3.5 py-2 bg-slate-50 border border-purple-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Contraseña</label>
+                                        <div className="relative">
+                                            <input 
+                                                type={showDesignerPass ? "text" : "password"} 
+                                                autoComplete="new-password"
+                                                value={designerPass} 
+                                                onChange={e => setDesignerPass(e.target.value)}
+                                                placeholder="••••••••" 
+                                                className="w-full px-3.5 py-2 bg-slate-50 border border-purple-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400 pr-10"
+                                            />
+                                            <button 
+                                                type="button"
+                                                onClick={() => setShowDesignerPass(!showDesignerPass)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                                <EyeIcon show={showDesignerPass} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="w-full py-3 text-white font-bold rounded-2xl text-xs btn-3d-purple">
+                                        Ingresar Diseñador
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* REGISTERED USER LOGIN */}
+                            {authTab === 'login' && (
+                                <form onSubmit={handleRegisteredSubmit} className="space-y-3" autoComplete="off">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Nombre Completo</label>
+                                        <input 
+                                            type="text" 
+                                            required
+                                            value={loginName} 
+                                            onChange={e => setLoginName(e.target.value)}
+                                            placeholder="Ana Maria Rossi" 
+                                            className="w-full px-3 py-1.5 bg-slate-50 border border-sky-100 rounded-xl text-xs"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">DNI</label>
+                                        <input 
+                                            type="text" 
+                                            required
+                                            value={loginDni} 
+                                            onChange={e => setLoginDni(e.target.value)}
+                                            placeholder="38999111" 
+                                            className="w-full px-3 py-1.5 bg-slate-50 border border-sky-100 rounded-xl text-xs"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Correo Electrónico</label>
+                                        <input 
+                                            type="email" 
+                                            required
+                                            value={loginEmail} 
+                                            onChange={e => setLoginEmail(e.target.value)}
+                                            placeholder="ana@email.com" 
+                                            className="w-full px-3 py-1.5 bg-slate-50 border border-sky-100 rounded-xl text-xs"
+                                        />
+                                    </div>
+                                    <button type="submit" className="w-full py-2.5 text-white font-bold rounded-2xl text-xs btn-3d-blue mt-2">
+                                        Registrar e Ingresar
+                                    </button>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* HEADER SUPERIOR */}
+            <header className="bg-white/80 backdrop-blur-md border-b border-sky-100 px-5 py-3.5 flex flex-wrap items-center justify-between shadow-sm">
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-tr from-sky-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-md text-white text-xl">
+                        💬
+                    </div>
+                    <div>
+                        <h1 className="font-extrabold text-sm text-slate-900 flex items-center space-x-2">
+                            <span>Atención Multi-Operador</span>
+                            {fbConnected && (
+                                <span className="flex h-2.5 w-2.5 relative" title="Conectado en tiempo real">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
+                            )}
+                        </h1>
+                        <p className="text-[10px] text-sky-600 font-bold tracking-wide">Asistencia Inteligente</p>
+                    </div>
+                </div>
+
+                {/* TAB SWITCHERS WITH 3D BUTTON STYLING */}
+                <div className="flex items-center space-x-2.5 my-2 sm:my-0">
+                    <button 
+                        onClick={() => setActiveTab('client')} 
+                        className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all ${activeTab === 'client' ? 'btn-3d-blue text-white' : 'btn-3d-slate'}`}>
+                        <span>🤖</span>
+                        <span>Chat Cliente</span>
+                    </button>
+
+                    {/* RESTRICCIÓN MANDATORIA: CHAT INTERNO SOLO PARA STAFF */}
+                    {isStaff && (
+                        <button 
+                            onClick={() => setActiveTab('internal')} 
+                            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all ${activeTab === 'internal' ? 'btn-3d-purple text-white' : 'btn-3d-slate'}`}>
+                            <LockIcon />
+                            <span>Chat Interno Staff</span>
+                        </button>
+                    )}
+
+                    {currentUser.role === 'Diseñador' && (
+                        <button 
+                            onClick={() => setActiveTab('admin')} 
+                            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all ${activeTab === 'admin' ? 'btn-3d-purple text-white' : 'btn-3d-slate'}`}>
+                            <SettingsIcon />
+                            <span>Panel Diseñador</span>
+                        </button>
+                    )}
+                </div>
+
+                {/* USER SESSION BADGE AND DISCREET OPERATOR LOCK BUTTON */}
+                <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 text-xs bg-sky-50 px-3 py-1.5 rounded-2xl border border-sky-100">
+                        <div className="text-right">
+                            <p className="font-extrabold text-slate-800 text-xs">{currentUser.name}</p>
+                            <p className="text-[9px] font-bold text-slate-500">
+                                Rol: <span className={currentUser.role === 'Cliente' ? 'text-blue-600 font-bold' : 'text-emerald-600 font-bold'}>{currentUser.role}</span>
+                            </p>
+                        </div>
+                        {isStaff && (
+                            <button 
+                                onClick={handleLogout}
+                                title="Cerrar Sesión de Staff"
+                                className="px-2 py-1 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors text-[10px] font-bold border border-transparent hover:border-red-200 ml-1">
+                                Salir 🚪
+                            </button>
+                        )}
+                    </div>
+
+                    {/* DISCREET LOCK BUTTON FOR OPERATORS */}
+                    <button
+                        onClick={() => setIsLoginModalOpen(true)}
+                        title="Acceso Restringido Operadores"
+                        className="p-2.5 bg-slate-100 hover:bg-sky-100 text-slate-600 hover:text-sky-700 rounded-2xl border border-slate-200 hover:border-sky-300 transition-all shadow-sm">
+                        <LockIcon />
+                    </button>
+                </div>
+            </header>
+
+            {/* TAB CONTENT VIEWS */}
+            <div className="flex-1 overflow-hidden flex p-3 sm:p-5">
+
+                {/* VIEW 1: CUSTOMER CHAT (LIGHT BACKGROUND WITH 3D BUTTONS) */}
+                {activeTab === 'client' && (
+                    <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full bg-white rounded-3xl shadow-xl border border-sky-100 overflow-hidden">
+                        {/* Header status bar */}
+                        <div className="bg-sky-50/80 px-5 py-3.5 border-b border-sky-100 flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <div>
+                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Centro de Atención</p>
+                                    <p className="text-xs font-bold text-slate-800">
+                                        {isBotActive 
+                                            ? "🤖 Bot Automatizado Interactivo" 
+                                            : `👨‍💼 Operador: ${assignedOperator?.name} (${assignedOperator?.role})`}
+                                    </p>
+                                </div>
+                            </div>
+                            {!isBotActive && (
+                                <button 
+                                    onClick={handleRestartBot}
+                                    className="text-xs btn-3d-slate px-3.5 py-1.5 rounded-xl font-bold">
+                                    Reiniciar Bot 🔄
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Message Stream */}
+                        <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-gradient-to-b from-sky-50/30 to-white">
+                            {clientMessages.map((msg) => (
+                                <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} animate-fade-in`}>
+                                    <div className={`max-w-md rounded-2xl px-4 py-3 shadow-sm text-xs leading-relaxed ${
+                                        msg.sender === 'user' 
+                                            ? 'bg-blue-600 text-white rounded-br-none shadow-blue-500/10' 
+                                            : msg.sender === 'system'
+                                            ? 'bg-amber-50 text-amber-900 border border-amber-200 text-center w-full max-w-none text-xs my-1 font-medium'
+                                            : 'bg-white text-slate-800 rounded-bl-none border border-sky-100 shadow-sky-100/50'
+                                    }`}>
+                                        {msg.operatorName && (
+                                            <p className="text-[11px] font-extrabold text-sky-600 mb-1">
+                                                {msg.operatorName} • <span className="text-slate-400 font-medium">{msg.operatorRole}</span>
+                                            </p>
+                                        )}
+
+                                        <p className="whitespace-pre-line text-xs font-medium">{msg.text}</p>
+
+                                        {msg.image && (
+                                            <div className="mt-2">
+                                                <img 
+                                                    src={msg.image} 
+                                                    onClick={() => setLightboxImg(msg.image)}
+                                                    alt="Adjunto" 
+                                                    className="max-w-xs max-h-48 rounded-xl border border-sky-200 shadow cursor-pointer object-cover hover:opacity-90 transition-opacity" 
+                                                />
+                                                <span className="text-[9px] text-slate-400 block mt-1">Haz clic para ampliar</span>
+                                            </div>
+                                        )}
+
+                                        <p className={`text-[9px] mt-1.5 text-right font-mono ${msg.sender === 'user' ? 'text-blue-100' : 'text-slate-400'}`}>
+                                            {msg.time}
+                                        </p>
+
+                                        {/* Dynamic Branching 3D Options */}
+                                        {msg.options && (
+                                            <div className="mt-3.5 space-y-2 border-t border-sky-100 pt-3">
+                                                {msg.options.map((opt, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => handleOptionClick(opt)}
+                                                        className="w-full text-left font-bold px-4 py-2.5 rounded-xl text-xs btn-3d-sky-option flex items-center justify-between group">
+                                                        <span>{opt.label}</span>
+                                                        <span className="group-hover:translate-x-1 transition-transform">➔</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            <div ref={chatEndRef} />
+                        </div>
+
+                        {/* Image Preview Bar */}
+                        {clientImagePreview && (
+                            <div className="px-4 py-2 bg-sky-50 flex items-center space-x-3 border-t border-sky-100">
+                                <img src={clientImagePreview} alt="Preview" className="w-12 h-12 object-cover rounded-xl border border-sky-200" />
+                                <span className="text-xs text-slate-600 font-medium flex-1">Imagen lista para enviar</span>
+                                <button onClick={() => setClientImagePreview(null)} className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">Quitar ✕</button>
+                            </div>
+                        )}
+
+                        {/* Message Input Box */}
+                        <form onSubmit={handleSendClientMessage} className="p-3.5 bg-white border-t border-sky-100 flex items-center space-x-2">
+                            <label className="cursor-pointer p-2.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-colors" title="Adjuntar Imagen">
+                                <PaperclipIcon />
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    onChange={(e) => handleImageUpload(e, setClientImagePreview)} 
+                                />
+                            </label>
+                            <input 
+                                type="text" 
+                                value={inputClientMsg}
+                                onChange={e => setInputClientMsg(e.target.value)}
+                                placeholder="Escribe un mensaje..." 
+                                className="flex-1 bg-slate-50 border border-sky-100 rounded-2xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                            />
+                            <button 
+                                type="submit" 
+                                className="btn-3d-blue text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center space-x-1">
+                                <SendIcon />
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* VIEW 2: PRIVATE STAFF INTERNAL CHAT (STRICTLY HIDDEN FROM CLIENTS) */}
+                {activeTab === 'internal' && isStaff && (
+                    <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full bg-white rounded-3xl shadow-xl border border-purple-100 overflow-hidden">
+                        <div className="bg-purple-50/80 px-5 py-3.5 border-b border-purple-100 flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                <span className="p-1.5 bg-purple-100 text-purple-600 rounded-xl border border-purple-200">
+                                    <LockIcon />
+                                </span>
+                                <div>
+                                    <h3 className="font-extrabold text-xs uppercase tracking-wider text-purple-900">Canal Interno Confidencial</h3>
+                                    <p className="text-[10px] text-purple-600 font-semibold">Exclusivo para Staff • Firebase Realtime</p>
+                                </div>
+                            </div>
+                            <span className="bg-purple-100 text-purple-700 border border-purple-200 text-[10px] px-3 py-1 rounded-full font-bold">
+                                Canal Privado
+                            </span>
+                        </div>
+
+                        <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-gradient-to-b from-purple-50/20 to-white">
+                            {internalMessages.map((msg) => {
+                                const isMe = currentUser && msg.sender === currentUser.name;
+                                return (
+                                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-fade-in`}>
+                                        <div className={`max-w-md rounded-2xl px-4 py-3 shadow-sm text-xs leading-relaxed ${
+                                            isMe 
+                                                ? 'bg-purple-600 text-white rounded-br-none shadow-purple-500/10' 
+                                                : 'bg-white text-slate-800 rounded-bl-none border border-purple-100 shadow-purple-100/50'
+                                        }`}>
+                                            <div className="flex items-center space-x-2 mb-1">
+                                                <span className={`text-[11px] font-extrabold ${isMe ? 'text-purple-100' : 'text-purple-700'}`}>{msg.sender}</span>
+                                                <span className="text-[9px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200 font-bold">
+                                                    {msg.role}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs whitespace-pre-line font-medium">{msg.text}</p>
+                                            
+                                            {msg.image && (
+                                                <div className="mt-2">
+                                                    <img 
+                                                        src={msg.image} 
+                                                        onClick={() => setLightboxImg(msg.image)}
+                                                        alt="Adjunto Interno" 
+                                                        className="max-w-xs max-h-48 rounded-xl border border-purple-200 shadow cursor-pointer object-cover hover:opacity-90 transition-opacity" 
+                                                    />
+                                                </div>
+                                            )}
+
+                                            <p className={`text-[9px] mt-1.5 text-right font-mono ${isMe ? 'text-purple-200' : 'text-slate-400'}`}>
+                                                {msg.time}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            <div ref={internalEndRef} />
+                        </div>
+
+                        {internalImagePreview && (
+                            <div className="px-4 py-2 bg-purple-50 flex items-center space-x-3 border-t border-purple-100">
+                                <img src={internalImagePreview} alt="Preview" className="w-12 h-12 object-cover rounded-xl border border-purple-200" />
+                                <span className="text-xs text-slate-600 font-medium flex-1">Imagen confidencial adjunta</span>
+                                <button onClick={() => setInternalImagePreview(null)} className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">Quitar ✕</button>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSendInternalMessage} className="p-3.5 bg-white border-t border-purple-100 flex items-center space-x-2">
+                            <label className="cursor-pointer p-2.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-colors" title="Adjuntar Imagen">
+                                <PaperclipIcon />
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    onChange={(e) => handleImageUpload(e, setInternalImagePreview)} 
+                                />
+                            </label>
+                            <input 
+                                type="text" 
+                                value={internalInput}
+                                onChange={e => setInternalInput(e.target.value)}
+                                placeholder="Mensaje privado para el personal..." 
+                                className="flex-1 bg-slate-50 border border-purple-100 rounded-2xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                            />
+                            <button 
+                                type="submit" 
+                                className="btn-3d-purple text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center space-x-1">
+                                <SendIcon />
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* VIEW 3: DESIGNER PANEL (BOT FLOW EDITOR & ROLES MANAGEMENT) */}
+                {activeTab === 'admin' && currentUser.role === 'Diseñador' && (
+                    <div className="flex-1 p-2 sm:p-4 overflow-y-auto max-w-6xl mx-auto w-full space-y-6">
+                        
+                        {/* Designer Banner */}
+                        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-6 rounded-3xl shadow-xl text-white flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-white/20">
+                                    Modo Diseñador Principal
+                                </span>
+                                <h2 className="text-2xl font-black mt-2">Panel Editor de Bot y Usuarios</h2>
+                                <p className="text-purple-100 text-xs mt-1 font-medium">Modifica respuestas y opciones encadenadas con sincronización en tiempo real.</p>
+                            </div>
+
+                            <div className="flex bg-white/20 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 text-xs font-bold space-x-1">
+                                <button 
+                                    onClick={() => setDesignerSubTab('editor')}
+                                    className={`px-4 py-2 rounded-xl transition-all ${designerSubTab === 'editor' ? 'bg-white text-purple-700 shadow-md' : 'text-white hover:bg-white/10'}`}>
+                                    ✏️ Editor Árbol del Bot
+                                </button>
+                                <button 
+                                    onClick={() => setDesignerSubTab('users')}
+                                    className={`px-4 py-2 rounded-xl transition-all ${designerSubTab === 'users' ? 'bg-white text-purple-700 shadow-md' : 'text-white hover:bg-white/10'}`}>
+                                    👥 Gestión Usuarios / Roles
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* SUB-SECTION 1: CHATBOT FLOW BUILDER */}
+                        {designerSubTab === 'editor' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                
+                                {/* Node List Sidebar */}
+                                <div className="bg-white p-5 rounded-3xl shadow-lg border border-sky-100 flex flex-col">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="font-extrabold text-slate-700 text-xs uppercase tracking-wider">
+                                            Nodos de Respuesta ({Object.keys(chatbotNodes).length})
+                                        </h3>
+                                        <button 
+                                            onClick={handleCreateNewNode}
+                                            className="text-xs btn-3d-purple text-white px-3 py-1.5 rounded-xl font-bold">
+                                            + Crear Nodo
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-2 flex-1 overflow-y-auto max-h-[500px] pr-1">
+                                        {Object.keys(chatbotNodes).map((key) => {
+                                            const node = chatbotNodes[key];
+                                            const isSelected = selectedNodeId === key;
+                                            return (
+                                                <div 
+                                                    key={key}
+                                                    onClick={() => setSelectedNodeId(key)}
+                                                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                                                        isSelected 
+                                                            ? 'border-purple-400 bg-purple-50/70 shadow-sm' 
+                                                            : 'border-slate-100 bg-slate-50/60 hover:bg-sky-50/50'
+                                                    }`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="font-extrabold text-xs text-slate-800">{node.title || key}</p>
+                                                        {key === 'start' && (
+                                                            <span className="text-[9px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded-md">INICIO</span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-500 truncate mt-1">{node.text}</p>
+                                                    <p className="text-[9px] text-sky-600 font-bold mt-1">Opciones: {node.options ? node.options.length : 0}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Active Node Form Editor */}
+                                {editingNode && (
+                                    <div className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-lg border border-sky-100 space-y-5">
+                                        <div className="flex items-center justify-between border-b border-sky-100 pb-3">
+                                            <div>
+                                                <h3 className="font-extrabold text-sm text-slate-900">
+                                                    Editando Nodo: <span className="text-purple-600">{editingNode.title}</span>
+                                                </h3>
+                                                <p className="text-[10px] text-slate-400 font-mono">ID interno: {editingNode.id}</p>
+                                            </div>
+                                            {editingNode.id !== 'start' && (
+                                                <button 
+                                                    onClick={() => handleDeleteNode(editingNode.id)}
+                                                    className="text-xs btn-3d-red text-white px-3 py-1.5 rounded-xl font-bold">
+                                                    Eliminar Nodo
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Título del Nodo</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={editingNode.title || ''} 
+                                                    onChange={e => setEditingNode({ ...editingNode, title: e.target.value })}
+                                                    className="w-full px-3.5 py-2 bg-slate-50 border border-sky-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400" 
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">ID Único</label>
+                                                <input 
+                                                    type="text" 
+                                                    disabled={editingNode.id === 'start'}
+                                                    value={editingNode.id || ''} 
+                                                    onChange={e => setEditingNode({ ...editingNode, id: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                                                    className="w-full px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-500 font-mono" 
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                                💬 Mensaje que Responderá el Bot
+                                            </label>
+                                            <textarea 
+                                                rows="3"
+                                                value={editingNode.text || ''} 
+                                                onChange={e => setEditingNode({ ...editingNode, text: e.target.value })}
+                                                className="w-full px-3.5 py-2 bg-slate-50 border border-sky-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400"
+                                            ></textarea>
+                                        </div>
+
+                                        {/* Dynamic Options List */}
+                                        <div className="border-t border-sky-100 pt-4">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h4 className="font-extrabold text-xs uppercase text-slate-700">
+                                                    Opciones Encadenadas Ilimitadas ({editingNode.options ? editingNode.options.length : 0})
+                                                </h4>
+                                                <button 
+                                                    onClick={handleAddOptionToEditingNode}
+                                                    className="text-xs btn-3d-emerald text-white px-3 py-1.5 rounded-xl font-bold">
+                                                    + Añadir Opción
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                                                {editingNode.options && editingNode.options.map((opt, idx) => {
+                                                    const isDerive = !!opt.deriveTo;
+                                                    return (
+                                                        <div key={idx} className="p-3.5 bg-sky-50/60 border border-sky-100 rounded-2xl space-y-2">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[10px] font-extrabold bg-white px-2.5 py-1 rounded-lg text-sky-700 shadow-sm border border-sky-100">
+                                                                    Opción #{idx + 1}
+                                                                </span>
+                                                                <button 
+                                                                    onClick={() => handleRemoveOption(idx)}
+                                                                    className="text-xs text-red-500 hover:text-red-700 font-bold">
+                                                                    Quitar ✕
+                                                                </button>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                                                <div>
+                                                                    <label className="block text-[9px] font-bold text-slate-500">Texto Botón</label>
+                                                                    <input 
+                                                                        type="text"
+                                                                        value={opt.label || ''}
+                                                                        onChange={e => handleUpdateOption(idx, 'label', e.target.value)}
+                                                                        className="w-full px-2.5 py-1.5 bg-white border border-sky-100 rounded-xl text-xs text-slate-800 font-medium"
+                                                                    />
+                                                                </div>
+
+                                                                <div>
+                                                                    <label className="block text-[9px] font-bold text-slate-500">Tipo de Acción</label>
+                                                                    <select 
+                                                                        value={isDerive ? 'derive' : 'next'}
+                                                                        onChange={e => handleUpdateOption(idx, 'actionType', e.target.value)}
+                                                                        className="w-full px-2.5 py-1.5 bg-white border border-sky-100 rounded-xl text-xs text-slate-800 font-medium">
+                                                                        <option value="next">➡️ Ir a Siguiente Nodo</option>
+                                                                        <option value="derive">🎧 Derivar a Operador</option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <div>
+                                                                    {isDerive ? (
+                                                                        <>
+                                                                            <label className="block text-[9px] font-bold text-slate-500">Área Destino</label>
+                                                                            <select 
+                                                                                value={opt.deriveTo || 'Atención al público'}
+                                                                                onChange={e => handleUpdateOption(idx, 'deriveTo', e.target.value)}
+                                                                                className="w-full px-2.5 py-1.5 bg-white border border-sky-100 rounded-xl text-xs text-slate-800 font-medium">
+                                                                                <option value="Atención al público">Atención al público</option>
+                                                                                <option value="Administrativo">Administrativo</option>
+                                                                                <option value="Reclamos">Reclamos</option>
+                                                                            </select>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <label className="block text-[9px] font-bold text-slate-500">Nodo Destino</label>
+                                                                            <select 
+                                                                                value={opt.next || 'start'}
+                                                                                onChange={e => handleUpdateOption(idx, 'next', e.target.value)}
+                                                                                className="w-full px-2.5 py-1.5 bg-white border border-sky-100 rounded-xl text-xs text-slate-800 font-medium">
+                                                                                {Object.keys(chatbotNodes).map(nodeKey => (
+                                                                                    <option key={nodeKey} value={nodeKey}>
+                                                                                        {chatbotNodes[nodeKey].title || nodeKey}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-3 border-t border-sky-100 flex justify-end">
+                                            <button 
+                                                onClick={handleSaveNodeChanges}
+                                                className="px-6 py-3 btn-3d-purple text-white font-bold rounded-2xl text-xs uppercase tracking-wider">
+                                                💾 Guardar Respuestas y Opciones
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* SUB-SECTION 2: USER & ROLES MANAGEMENT */}
+                        {designerSubTab === 'users' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                
+                                {/* Create User Form */}
+                                <div className="bg-white p-6 rounded-3xl shadow-lg border border-sky-100">
+                                    <h3 className="font-extrabold text-sm text-slate-900 mb-4">
+                                        ➕ Crear Nuevo Usuario Staff
+                                    </h3>
+                                    <form onSubmit={handleCreateUser} className="space-y-4" autoComplete="off">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre Completo</label>
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                autoComplete="off"
+                                                value={newUserForm.name} 
+                                                onChange={e => setNewUserForm({...newUserForm, name: e.target.value})}
+                                                placeholder="Ej: Gabriel Torres" 
+                                                className="w-full px-3.5 py-2.5 bg-slate-50 border border-sky-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400" 
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre de Usuario (Login)</label>
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                autoComplete="off"
+                                                value={newUserForm.username} 
+                                                onChange={e => setNewUserForm({...newUserForm, username: e.target.value})}
+                                                placeholder="Ej: gtorres_admin" 
+                                                className="w-full px-3.5 py-2.5 bg-slate-50 border border-sky-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400" 
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Contraseña de Acceso</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type={showNewUserPass ? "text" : "password"} 
+                                                    required 
+                                                    autoComplete="new-password"
+                                                    value={newUserForm.password} 
+                                                    onChange={e => setNewUserForm({...newUserForm, password: e.target.value})}
+                                                    placeholder="••••••••" 
+                                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-sky-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400 pr-10" 
+                                                />
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setShowNewUserPass(!showNewUserPass)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                                    <EyeIcon show={showNewUserPass} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Rol Asignado</label>
+                                            <select 
+                                                value={newUserForm.role}
+                                                onChange={e => setNewUserForm({...newUserForm, role: e.target.value})}
+                                                className="w-full px-3.5 py-2.5 bg-slate-50 border border-sky-100 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-400">
+                                                <option value="Administrativo">💼 Administrativo</option>
+                                                <option value="Reclamos">🚨 Reclamos</option>
+                                                <option value="Atención al público">👥 Atención al público</option>
+                                            </select>
+                                        </div>
+
+                                        <button 
+                                            type="submit" 
+                                            className="w-full py-3.5 btn-3d-purple text-white font-bold rounded-2xl text-xs uppercase tracking-wider">
+                                            Guardar en Firestore
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* Users List with Masked Passwords */}
+                                <div className="bg-white p-6 rounded-3xl shadow-lg border border-sky-100">
+                                    <h3 className="font-extrabold text-sm text-slate-900 mb-4">
+                                        👥 Lista de Personal ({systemUsers.length})
+                                    </h3>
+
+                                    <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                                        {systemUsers.map((u) => {
+                                            const isRevealed = !!revealedPasswords[u.id];
+                                            return (
+                                                <div key={u.id} className="p-3.5 border border-sky-100 bg-sky-50/50 rounded-2xl flex items-center justify-between">
+                                                    <div>
+                                                        <p className="font-extrabold text-xs text-slate-800">{u.name}</p>
+                                                        <p className="text-[10px] text-slate-500 font-mono">@{u.username}</p>
+                                                        
+                                                        {/* Masked Password Display */}
+                                                        <div className="flex items-center space-x-1.5 mt-1 text-[10px] text-slate-500 font-mono">
+                                                            <span>Clave:</span>
+                                                            <span className="text-purple-600 font-bold">
+                                                                {isRevealed ? (u.passwordHash || '••••••••') : '••••••••'}
+                                                            </span>
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => togglePasswordMask(u.id)}
+                                                                className="text-slate-400 hover:text-slate-600 ml-1">
+                                                                <EyeIcon show={isRevealed} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <span className={`text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-wider border ${
+                                                        u.role === 'Diseñador' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                                                        u.role === 'Administrativo' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                                        u.role === 'Reclamos' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                    }`}>
+                                                        {u.role}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
+                )}
+
+            </div>
+        </div>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
 </script>
 
 </body>

@@ -23,12 +23,12 @@
     }
   </script>
   <style>
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .chat-bg { background-color: #f8fafc; background-image: radial-gradient(#e2e8f0 0.75px, transparent 0.75px); background-size: 16px 16px; }
+    .sidebar-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
   </style>
 </head>
 <body class="h-full font-sans antialiased text-slate-800 flex flex-col">
@@ -46,72 +46,74 @@
         </div>
       </div>
 
-      <!-- Session Status / Navigation -->
-      <div id="top-nav-actions" class="flex items-center space-x-3">
-        <!-- Relleno dinámico por JavaScript -->
-      </div>
+      <!-- Status / Navigation -->
+      <div id="top-nav-actions" class="flex items-center space-x-3"></div>
     </div>
   </header>
 
-  <!-- Alert / Notification Toast Banner -->
+  <!-- Notification Toast Banner -->
   <div id="toast-container" class="fixed top-20 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
   <!-- MAIN APP CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 md:p-6 flex flex-col">
 
     <!-- VIEW 1: CHAT CLIENTE GENERAL -->
-    <div id="view-client-chat" class="flex-1 flex flex-col lg:flex-row gap-4 h-[calc(100vh-6rem)]">
-      <!-- Sidebar / User Status Bar -->
-      <div class="lg:w-80 bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
-        <div>
-          <div class="flex items-center space-x-3 pb-4 border-b border-slate-100">
-            <div id="client-avatar" class="w-12 h-12 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-lg border border-sky-200 shadow-inner">
+    <div id="view-client-chat" class="flex-1 flex flex-col lg:flex-row gap-4 h-[calc(100vh-6rem)] relative">
+      
+      <!-- MENU LATERAL (MINIMIZADO POR DEFECTO) -->
+      <div id="client-sidebar" class="sidebar-transition lg:w-16 bg-white border border-slate-200 rounded-2xl p-3 flex flex-col justify-between shadow-sm relative z-20 group">
+        
+        <!-- Toggle Minimizar/Expandir Button -->
+        <button onclick="toggleSidebar()" id="btn-toggle-sidebar" title="Expandir/Minimizar Menú" class="hidden lg:flex absolute -right-3 top-6 w-7 h-7 bg-white border border-slate-300 hover:border-sky-500 hover:text-sky-600 rounded-full items-center justify-center text-slate-600 shadow-md z-30 transition">
+          <i id="toggle-sidebar-icon" class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+
+        <div class="space-y-4">
+          <!-- Perfil Usuario Status -->
+          <div class="flex items-center space-x-3 pb-3 border-b border-slate-100 overflow-hidden">
+            <div id="client-avatar" class="w-10 h-10 min-w-[2.5rem] rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-base border border-sky-200 shadow-inner">
               <i class="fa-solid fa-user"></i>
             </div>
-            <div class="overflow-hidden">
-              <h3 id="client-display-name" class="font-semibold text-slate-800 truncate">Usuario Invitado</h3>
-              <p id="client-display-detail" class="text-xs text-slate-500 truncate">Sin registro previo</p>
+            <div class="sidebar-text hidden overflow-hidden">
+              <h3 id="client-display-name" class="font-semibold text-xs text-slate-800 truncate">Usuario Invitado</h3>
+              <p id="client-display-detail" class="text-[10px] text-slate-500 truncate">Sin registro previo</p>
             </div>
           </div>
 
-          <!-- Acciones de Registro rápido si es invitado -->
-          <div id="client-registration-box" class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-            <p class="text-xs text-slate-600 font-medium mb-2"><i class="fa-solid fa-id-card text-sky-600 mr-1"></i> Registrate para guardar tu historial:</p>
-            <div class="space-y-2">
-              <input type="text" id="reg-name" placeholder="Nombre Completo" class="w-full text-xs p-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
-              <input type="text" id="reg-dni" placeholder="DNI / Cédula" class="w-full text-xs p-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
-              <input type="email" id="reg-email" placeholder="Correo Electrónico" class="w-full text-xs p-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
-              <button onclick="registerGuestUser()" class="w-full bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold py-2 rounded-lg transition shadow">
-                Guardar Mis Datos
-              </button>
-            </div>
+          <!-- Botón de Registro / Login -->
+          <div id="client-reg-action-area">
+            <button onclick="openClientAuthModal()" class="w-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 p-2.5 rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition shadow-sm">
+              <i class="fa-solid fa-user-check text-sky-600 text-sm"></i>
+              <span class="sidebar-text hidden truncate">Ingresar como Usuario Registrado</span>
+            </button>
           </div>
 
-          <!-- Modos de Bot/Operador -->
-          <div class="mt-4 space-y-2">
-            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Estado de la Consulta</label>
-            <div id="chat-mode-badge" class="px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center justify-between">
-              <span><i class="fa-solid fa-robot mr-1.5"></i> Bot Interactivo Activo</span>
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <!-- Estado del Chat / Bot -->
+          <div class="space-y-2 pt-2">
+            <label class="sidebar-text hidden text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Estado</label>
+            <div id="chat-mode-badge" class="p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center justify-center lg:justify-between">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-robot"></i> <span class="sidebar-text hidden">Bot Activo</span></span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse hidden lg:block"></span>
             </div>
             
-            <button id="btn-request-operator" onclick="requestHumanOperator()" class="w-full mt-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-medium text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition">
+            <button id="btn-request-operator" onclick="requestHumanOperator()" title="Derivar con Operador" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 p-2.5 rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition">
               <i class="fa-solid fa-headset text-sm"></i>
-              <span>Derivar con Operador Humano</span>
+              <span class="sidebar-text hidden truncate">Hablar con Operador Humano</span>
             </button>
           </div>
         </div>
 
-        <div class="pt-4 border-t border-slate-100 text-center">
-          <button onclick="openStaffModal()" class="text-xs text-slate-500 hover:text-sky-600 font-medium flex items-center justify-center gap-1.5 mx-auto">
-            <i class="fa-solid fa-user-gear"></i> Acceso Staff / Operadores / Diseñador
+        <div class="pt-3 border-t border-slate-100 text-center">
+          <button onclick="openStaffModal()" title="Acceso Staff" class="w-full text-slate-500 hover:text-sky-600 font-medium p-2 rounded-xl hover:bg-slate-50 transition flex items-center justify-center gap-2 text-xs">
+            <i class="fa-solid fa-user-gear text-base"></i>
+            <span class="sidebar-text hidden truncate">Acceso Staff</span>
           </button>
         </div>
       </div>
 
-      <!-- Window / Chat Area -->
-      <div class="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col shadow-sm overflow-hidden">
-        <!-- Chat Top Header -->
+      <!-- Ventana de Chat Principal -->
+      <div class="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col shadow-sm overflow-hidden z-10">
+        <!-- Header Chat -->
         <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <div id="chat-header-icon" class="w-9 h-9 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
@@ -119,7 +121,7 @@
             </div>
             <div>
               <h2 id="chat-header-title" class="font-semibold text-sm">Asistente Virtual Automatizado</h2>
-              <p id="chat-header-sub" class="text-xs text-slate-400">Responde seleccionando las opciones</p>
+              <p id="chat-header-sub" class="text-xs text-slate-400">Responde seleccionando las opciones encadenadas</p>
             </div>
           </div>
           <button onclick="resetBotChat()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1">
@@ -127,12 +129,10 @@
           </button>
         </div>
 
-        <!-- Messages Flow Area -->
-        <div id="chat-messages-container" class="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 chat-bg">
-          <!-- Dinámico -->
-        </div>
+        <!-- Flujo de Mensajes -->
+        <div id="chat-messages-container" class="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 chat-bg"></div>
 
-        <!-- Attached Image Preview area before send -->
+        <!-- Previsualización de Imagen -->
         <div id="image-preview-bar" class="hidden px-4 py-2 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
           <div class="flex items-center space-x-2">
             <img id="image-preview-element" class="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-sm" src="" alt="preview">
@@ -146,7 +146,7 @@
           </button>
         </div>
 
-        <!-- Chat Input Bar -->
+        <!-- Barra Input Chat -->
         <div class="p-3 md:p-4 border-t border-slate-200 bg-white">
           <form id="chat-input-form" onsubmit="handleUserSendMessage(event)" class="flex items-center space-x-2">
             <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl border border-slate-200 transition flex items-center justify-center">
@@ -164,14 +164,12 @@
 
     <!-- VIEW 2: PANEL DE STAFF / DISEÑADOR / OPERADORES -->
     <div id="view-staff-panel" class="hidden flex-1 flex flex-col h-[calc(100vh-6rem)] bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-      <!-- Staff Navigation Bar -->
       <div class="bg-slate-900 text-white px-4 py-3 flex flex-wrap items-center justify-between border-b border-slate-800 gap-2">
         <div class="flex items-center space-x-3">
           <span class="bg-indigo-600 text-white text-xs uppercase font-bold px-2.5 py-1 rounded-md tracking-wider" id="staff-role-badge">DISEÑADOR</span>
           <span class="font-semibold text-sm" id="staff-user-name">hermes</span>
         </div>
         
-        <!-- Navigation Tabs -->
         <div class="flex items-center space-x-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
           <button id="tab-btn-operators" onclick="switchStaffTab('operators')" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-white bg-sky-600 shadow transition flex items-center gap-1.5">
             <i class="fa-solid fa-headset"></i> Console Operador
@@ -192,20 +190,16 @@
         </button>
       </div>
 
-      <!-- TAB CONTENT 1: CONSOLA DE ATENCIÓN LIVE OPERADOR -->
+      <!-- TAB 1: OPERADORES -->
       <div id="staff-tab-operators" class="flex-1 flex flex-col md:flex-row overflow-hidden">
-        <!-- List of active requests -->
         <div class="w-full md:w-80 border-r border-slate-200 bg-slate-50 flex flex-col h-1/3 md:h-full">
           <div class="p-3 bg-slate-100 border-b border-slate-200 font-semibold text-xs text-slate-700 uppercase tracking-wider flex items-center justify-between">
             <span><i class="fa-solid fa-list-check mr-1 text-sky-600"></i> Solicitudes Entrantes</span>
             <span id="operator-queue-count" class="bg-sky-600 text-white text-[10px] px-2 py-0.5 rounded-full">0</span>
           </div>
-          <div id="operator-queue-list" class="flex-1 overflow-y-auto p-2 space-y-2">
-            <!-- Dinámico -->
-          </div>
+          <div id="operator-queue-list" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
         </div>
 
-        <!-- Live Chat Panel -->
         <div id="operator-chat-panel" class="flex-1 flex flex-col h-2/3 md:h-full bg-white">
           <div class="p-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -218,11 +212,10 @@
               </div>
             </div>
             <button id="btn-close-ticket" onclick="resolveCurrentTicket()" class="hidden text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition font-medium">
-              <i class="fa-solid fa-circle-check mr-1"></i> Finalizar Atencion
+              <i class="fa-solid fa-circle-check mr-1"></i> Finalizar Atención
             </button>
           </div>
 
-          <!-- Live Chat Area -->
           <div id="operator-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 chat-bg">
             <div class="text-center text-slate-400 my-auto py-12">
               <i class="fa-regular fa-comments text-4xl mb-2"></i>
@@ -230,7 +223,6 @@
             </div>
           </div>
 
-          <!-- Operator input bar -->
           <div class="p-3 border-t border-slate-200 bg-white">
             <form id="operator-send-form" onsubmit="handleOperatorSendMessage(event)" class="flex items-center space-x-2">
               <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl border border-slate-200 transition">
@@ -246,25 +238,33 @@
         </div>
       </div>
 
-      <!-- TAB CONTENT 2: CHAT INTERNO Y PRIVADO ENTRE OPERADORES -->
+      <!-- TAB 2: CHAT INTERNO Y PRIVADO CON CUALQUIER MIEMBRO DE STAFF O TODOS -->
       <div id="staff-tab-internal" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden">
-        <div class="w-full md:w-64 border-r border-slate-200 bg-slate-50 p-3">
-          <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-users mr-1"></i> Staff Conectado</h4>
-          <div id="internal-staff-list" class="space-y-2">
-            <!-- Staff list -->
+        <div class="w-full md:w-72 border-r border-slate-200 bg-slate-50 p-3 flex flex-col">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-users mr-1"></i> Comunicar con:</h4>
+          
+          <!-- Canal Broadcast Grupal -->
+          <div onclick="selectInternalRecipient('ALL')" id="recipient-btn-ALL" class="p-2.5 mb-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 cursor-pointer font-semibold text-xs flex items-center justify-between shadow-sm">
+            <span>📢 Todos (Broadcast Grupal)</span>
+            <i class="fa-solid fa-bullhorn text-indigo-600"></i>
           </div>
+
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Mensajes Privados Directos (1 a 1)</div>
+          
+          <div id="internal-staff-list" class="space-y-1.5 flex-1 overflow-y-auto"></div>
         </div>
+
         <div class="flex-1 flex flex-col bg-white">
           <div class="p-3 bg-slate-100 border-b border-slate-200 font-semibold text-sm text-slate-800 flex items-center justify-between">
-            <span><i class="fa-solid fa-shield-halved text-indigo-600 mr-2"></i> Canal Privado de Personal</span>
-            <span class="text-xs text-slate-500 font-normal">Mensajería en tiempo real</span>
+            <span id="internal-chat-header-title"><i class="fa-solid fa-shield-halved text-indigo-600 mr-2"></i> Canal Privado General (Broadcast)</span>
+            <span class="text-xs text-slate-500 font-normal" id="internal-chat-header-sub">Mensajería en tiempo real</span>
           </div>
-          <div id="internal-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 chat-bg">
-            <!-- Internal messages -->
-          </div>
+
+          <div id="internal-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 chat-bg"></div>
+
           <div class="p-3 border-t border-slate-200 bg-white">
             <form onsubmit="handleSendInternalMessage(event)" class="flex items-center space-x-2">
-              <input type="text" id="internal-input-text" placeholder="Escribe un mensaje privado para el equipo..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="internal-input-text" placeholder="Escribe un mensaje privado..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                 <i class="fa-solid fa-paper-plane mr-1"></i> Enviar
               </button>
@@ -273,22 +273,18 @@
         </div>
       </div>
 
-      <!-- TAB CONTENT 3: EDITOR DE BOT ENCADENADO (DISEÑADOR) -->
+      <!-- TAB 3: DISEÑADOR ARBOL BOT -->
       <div id="staff-tab-designer" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden p-4 gap-4 bg-slate-50">
-        <!-- Node list / Selection -->
         <div class="w-full md:w-80 bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm">
           <div class="flex items-center justify-between pb-3 border-b border-slate-200">
             <h3 class="font-bold text-sm text-slate-800"><i class="fa-solid fa-sitemap text-sky-600 mr-1.5"></i> Pasos del Bot</h3>
             <button onclick="createNewBotNode()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-2.5 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
-              <i class="fa-solid fa-plus"></i> Nuevo Nodo
+              <i class="fa-solid fa-plus"></i> Nuevo
             </button>
           </div>
-          <div id="designer-nodes-list" class="flex-1 overflow-y-auto space-y-2 mt-3 pr-1">
-            <!-- Nodos renderizados -->
-          </div>
+          <div id="designer-nodes-list" class="flex-1 overflow-y-auto space-y-2 mt-3 pr-1"></div>
         </div>
 
-        <!-- Node Editor Form -->
         <div class="flex-1 bg-white border border-slate-200 rounded-2xl p-6 overflow-y-auto shadow-sm">
           <div id="designer-editor-empty" class="text-center py-20 text-slate-400">
             <i class="fa-solid fa-pen-ruler text-5xl mb-3"></i>
@@ -299,7 +295,7 @@
             <input type="hidden" id="node-edit-id">
             
             <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 class="font-bold text-base text-slate-800">Editando ID del Nodo: <span id="lbl-node-id" class="text-sky-600 font-mono"></span></h3>
+              <h3 class="font-bold text-base text-slate-800">Editando Nodo ID: <span id="lbl-node-id" class="text-sky-600 font-mono"></span></h3>
               <button type="button" onclick="deleteCurrentNode()" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition">
                 <i class="fa-solid fa-trash mr-1"></i> Eliminar Nodo
               </button>
@@ -315,7 +311,6 @@
               <input type="url" id="node-edit-image" placeholder="https://ejemplo.com/imagen.jpg" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none">
             </div>
 
-            <!-- Opciones / Botones encadenados -->
             <div>
               <div class="flex items-center justify-between mb-2">
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Opciones / Botones de Respuesta</label>
@@ -324,9 +319,7 @@
                 </button>
               </div>
 
-              <div id="node-options-container" class="space-y-3">
-                <!-- Filas de opciones cargadas dinámicamente -->
-              </div>
+              <div id="node-options-container" class="space-y-3"></div>
             </div>
 
             <div class="pt-4 border-t border-slate-200 flex justify-end">
@@ -338,7 +331,7 @@
         </div>
       </div>
 
-      <!-- TAB CONTENT 4: GESTIÓN DE USUARIOS Y ROLES (DISEÑADOR) -->
+      <!-- TAB 4: GESTION USUARIOS -->
       <div id="staff-tab-users" class="hidden flex-1 flex flex-col p-6 overflow-y-auto bg-slate-50 space-y-6">
         <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <h3 class="font-bold text-base text-slate-800 mb-4 border-b border-slate-100 pb-2">
@@ -384,9 +377,7 @@
                   <th class="p-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody id="users-table-body" class="divide-y divide-slate-100">
-                <!-- Staff users table -->
-              </tbody>
+              <tbody id="users-table-body" class="divide-y divide-slate-100"></tbody>
             </table>
           </div>
         </div>
@@ -394,6 +385,38 @@
     </div>
 
   </main>
+
+  <!-- MODAL: REGISTRO CLIENTE (DNI Y NOMBRE) -->
+  <div id="modal-client-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+      <button onclick="closeClientAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl">
+          <i class="fa-solid fa-id-card"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-800">Ingreso de Usuario Registrado</h3>
+        <p class="text-xs text-slate-500 mt-1">Ingresa tu Nombre y DNI para recordar tu sesión y guardar tu historial</p>
+      </div>
+
+      <form onsubmit="handleClientRegisterSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nombre Completo</label>
+          <input type="text" id="input-client-name" required placeholder="ej: Maria Gonzalez" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">DNI / Cédula de Identidad</label>
+          <input type="text" id="input-client-dni" required placeholder="ej: 38445123" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+        </div>
+
+        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-sky-600/20 text-sm">
+          Recordar Mi Sesión
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- MODAL: LOGIN STAFF -->
   <div id="modal-staff-login" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -422,7 +445,7 @@
 
         <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-3 text-xs">
           <p class="font-bold"><i class="fa-solid fa-key mr-1"></i> Credenciales de Diseñador:</p>
-          <p class="mt-0.5 font-mono">Usuario: <b>  </b> | Password: <b> </b></p>
+          <p class="mt-0.5 font-mono">Usuario: <b>Design</b> | Password: <b>password</b></p>
         </div>
 
         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-600/20 text-sm">
@@ -432,7 +455,7 @@
     </div>
   </div>
 
-  <!-- MODAL: VISUALIZADOR DE IMAGEN EN TAMAÑO COMPLETO -->
+  <!-- MODAL: VISUALIZADOR IMAGEN -->
   <div id="modal-image-viewer" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageViewer()">
     <div class="max-w-4xl max-h-[90vh] relative">
       <img id="full-modal-image" src="" alt="Vista ampliada" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain mx-auto">
@@ -440,13 +463,12 @@
     </div>
   </div>
 
-  <!-- FIREBASE LIBRARIES (Modular SDK loaded as global object via Module script) -->
+  <!-- FIREBASE MODULAR SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, addDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Credenciales exactas solicitadas
     const firebaseConfig = {
       apiKey: "AIzaSyBJMRBWEbLmjTjmMRUCLspfu6wp_zZoyk4",
       authDomain: "chatweb-fc1c1.firebaseapp.com",
@@ -457,12 +479,10 @@
       measurementId: "G-PB926QLJQ1"
     };
 
-    // Inicialización
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Exportar instancias globales para uso en scripts tradicionales
     window.fbApp = app;
     window.fbAuth = auth;
     window.fbDb = db;
@@ -474,100 +494,96 @@
     window.fbOnSnapshot = onSnapshot;
     window.fbAddDoc = addDoc;
 
-    // Autenticarse de forma anónima para permitir Firestore
     signInAnonymously(auth).then(() => {
       console.log("Firebase Auth Anónimo Conectado correctamente.");
       window.initAppLogic();
     }).catch(err => {
-      console.warn("Autenticación Firebase en modo offline/fallback", err);
+      console.warn("Autenticación Firebase offline fallback", err);
       window.initAppLogic();
     });
   </script>
 
-  <!-- LOGICA COMPLETA DE LA APLICACIÓN -->
+  <!-- LOGICA COMPLETA JS -->
   <script>
-    // --- ESTADO GLOBAL & MEMORIA ---
     const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'chat-encadenado-app';
+
+    let isSidebarExpanded = false; // Minimizado por defecto
 
     let currentUserGuest = {
       registered: false,
       name: 'Usuario Invitado',
-      dni: '',
-      email: ''
+      dni: ''
     };
 
-    let currentStaffUser = null; // Objeto del operador/diseñador si está logueado
-    let currentChatMode = 'bot'; // 'bot' o 'operator'
-    let currentActiveTicketId = null; // ID del ticket que el operador está atendiendo
+    let currentStaffUser = null;
+    let currentChatMode = 'bot';
+    let currentActiveTicketId = null;
     let selectedImageBase64 = null;
     let selectedOperatorFileBase64 = null;
+    let internalSelectedRecipient = 'ALL';
 
-    // Árbol predeterminado del Bot Encadenado
     let defaultBotTree = {
       "start": {
         id: "start",
-        message: "¡Hola! Bienvenido a nuestro servicio de atención Automatizado 24/7. ¿Cómo te podemos ayudar hoy?",
+        message: "¡Hola! Bienvenido a nuestro servicio de atención Automatizado. ¿Cómo te podemos ayudar hoy?",
         imageUrl: "",
         options: [
-          { text: " Consulta o Reclamo", nextNode: "inicio" },
-          { text: " Zona y Horario de funcionamiento", nextNode: "zona" },
-          { text: " Hablar con un Operador Humano", action: "request_operator" }
+          { text: "Servicios y Consulta General", nextNode: "servicios" },
+          { text: "Zona y Horario de Atención", nextNode: "horarios" },
+          { text: "Hablar con un Operador Humano", action: "request_operator" }
         ]
       },
       "servicios": {
         id: "servicios",
-        message: "Ofrecemos soluciones integrales de gestión digital. ¿Sobre qué área te interesa conocer más?",
+        message: "Ofrecemos soporte técnico, gestión administrativa y atención personalizada. Selecciona el área de tu interés:",
         imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
         options: [
-          { text: " Planes Administrativos", nextNode: "info_admin" },
-          { text: " Asistencia Técnica y Reclamos", nextNode: "info_reclamos" },
-          { text: " Volver al Menú Principal", nextNode: "start" }
+          { text: "Planes Administrativos", nextNode: "info_admin" },
+          { text: "Asistencia Técnica / Reclamos", nextNode: "info_reclamos" },
+          { text: "Volver al Menú Principal", nextNode: "start" }
         ]
       },
       "info_admin": {
         id: "info_admin",
-        message: "Nuestros planes administrativos abarcan facturación electrónica, contratos y soporte continuo.",
+        message: "Nuestras áreas administrativas te ayudan con contrataciones y facturación.",
         imageUrl: "",
         options: [
-          { text: " Derivar a Atención Administrativa", action: "request_operator_admin" },
-          { text: " Volver al Menú Principal", nextNode: "start" }
+          { text: "Derivar a Atención Administrativa", action: "request_operator_admin" },
+          { text: "Volver al Inicio", nextNode: "start" }
         ]
       },
       "info_reclamos": {
         id: "info_reclamos",
-        message: "Lamentamos cualquier inconveniente. Para presentar un reclamo puedes enviar una foto o comprobante por aquí.",
+        message: "Si tienes una falla o reclamo, puedes adjuntar fotos o comprobantes en el chat.",
         imageUrl: "",
         options: [
-          { text: " Contactar Área de Reclamos", action: "request_operator_reclamos" },
-          { text: " Volver al Menú Principal", nextNode: "start" }
+          { text: "Contactar Área de Reclamos", action: "request_operator_reclamos" },
+          { text: "Volver al Inicio", nextNode: "start" }
         ]
       },
-      "estado_tramite": {
-        id: "estado_tramite",
-        message: "Para consultar el estado de tu trámite, ingresa tus datos registrándote a la izquierda o comunícate con un operador de Atención al Público.",
+      "horarios": {
+        id: "horarios",
+        message: "Nuestro Bot atiende las 24 hs. Los operadores atienden de Lunes a Viernes de 8:00 a 18:00 hs.",
         imageUrl: "",
         options: [
-          { text: " Hablar con Atención al Público", action: "request_operator_publico" },
-          { text: " Volver al Inicio", nextNode: "start" }
+          { text: "Volver al Inicio", nextNode: "start" }
         ]
       }
     };
 
     let botTree = { ...defaultBotTree };
 
-    // Lista predeterminada de usuarios Staff
     let staffUsers = [
       { username: 'hermes', password: 'Hjs2154', role: 'Diseñador', status: 'online' },
-      { username: 'maria_admin', password: '123', role: 'Administrativo', status: 'online' },
-      { username: 'carlos_reclamos', password: '123', role: 'Reclamos', status: 'online' },
-      { username: 'lucia_atencion', password: '123', role: 'Atención al Público', status: 'online' }
+      { username: 'yani', password: '1970', role: 'Administrativo', status: 'online' },
+      { username: 'coco', password: 'Cocolicho1965', role: 'Administrativo', status: 'online' },
+      { username: 'Gaby', password: '1989', role: 'Atención al Público', status: 'online' }
     ];
 
     let guestChatHistory = [];
     let operatorTickets = [];
     let internalMessages = [];
 
-    // --- INICIALIZACIÓN DE APLICACIÓN ---
     window.initAppLogic = function() {
       loadStoredGuestUser();
       setupFirestoreListeners();
@@ -576,26 +592,48 @@
       renderStaffUsersTable();
       renderInternalStaffList();
       resetBotChat();
+      applySidebarState();
     };
+
+    // --- LOGICA TOGGLE Y MINIMIZAR MENU LATERAL ---
+    function toggleSidebar() {
+      isSidebarExpanded = !isSidebarExpanded;
+      applySidebarState();
+    }
+
+    function applySidebarState() {
+      const sidebar = document.getElementById('client-sidebar');
+      const icon = document.getElementById('toggle-sidebar-icon');
+      const textElements = document.querySelectorAll('.sidebar-text');
+
+      if (isSidebarExpanded) {
+        sidebar.classList.remove('lg:w-16');
+        sidebar.classList.add('lg:w-72');
+        icon.className = "fa-solid fa-chevron-left text-xs";
+        textElements.forEach(el => el.classList.remove('hidden'));
+      } else {
+        sidebar.classList.remove('lg:w-72');
+        sidebar.classList.add('lg:w-16');
+        icon.className = "fa-solid fa-chevron-right text-xs";
+        textElements.forEach(el => el.classList.add('hidden'));
+      }
+    }
 
     // --- FIRESTORE LISTENERS REALTIME ---
     function setupFirestoreListeners() {
       if (!window.fbDb) return;
 
       try {
-        // Listening to Bot Tree updates
         const botTreeDocRef = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'botTree', 'config');
         window.fbOnSnapshot(botTreeDocRef, (docSnap) => {
           if (docSnap.exists()) {
             botTree = docSnap.data().nodes || defaultBotTree;
             renderBotTreeList();
           } else {
-            // Guardar configuración por defecto en Firestore
             window.fbSetDoc(botTreeDocRef, { nodes: defaultBotTree });
           }
-        }, (err) => console.log('Firestore Snapshot info:', err));
+        });
 
-        // Listening to Staff Users
         const staffDocRef = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users');
         window.fbOnSnapshot(staffDocRef, (docSnap) => {
           if (docSnap.exists() && docSnap.data().users) {
@@ -607,37 +645,28 @@
           }
         });
 
-        // Listening to Live Operator Queue / Tickets
         const ticketsCol = window.fbCollection(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'tickets');
         window.fbOnSnapshot(ticketsCol, (snapshot) => {
           let list = [];
-          snapshot.forEach(d => {
-            list.push({ id: d.id, ...d.data() });
-          });
+          snapshot.forEach(d => list.push({ id: d.id, ...d.data() }));
           operatorTickets = list;
           renderOperatorQueue();
-          if (currentActiveTicketId) {
-            renderOperatorActiveChat();
-          }
+          if (currentActiveTicketId) renderOperatorActiveChat();
         });
 
-        // Listening to Staff Internal Private Chat
         const internalCol = window.fbCollection(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'internalChat');
         window.fbOnSnapshot(internalCol, (snapshot) => {
           let msgs = [];
           snapshot.forEach(d => msgs.push({ id: d.id, ...d.data() }));
-          // Ordenar por timestamp
           msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
           internalMessages = msgs;
           renderInternalChat();
         });
 
-      } catch (e) {
-        console.warn("Error iniciando Firestore listeners:", e);
-      }
+      } catch (e) { console.warn("Firestore error", e); }
     }
 
-    // --- MANEJO DE USUARIOS INVITADOS / LOCALSTORAGE ---
+    // --- LOGIN / AUTENTICACIÓN CLIENTE CON DNI Y NOMBRE ---
     function loadStoredGuestUser() {
       const stored = localStorage.getItem('connectflow_guest_user');
       if (stored) {
@@ -648,30 +677,38 @@
       }
     }
 
-    function registerGuestUser() {
-      const name = document.getElementById('reg-name').value.trim();
-      const dni = document.getElementById('reg-dni').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
+    function openClientAuthModal() {
+      document.getElementById('modal-client-auth').classList.remove('hidden');
+    }
 
-      if (!name || !dni || !email) {
-        showToast('Por favor completa todos los campos para registrarte.', 'error');
+    function closeClientAuthModal() {
+      document.getElementById('modal-client-auth').classList.add('hidden');
+    }
+
+    function handleClientRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('input-client-name').value.trim();
+      const dni = document.getElementById('input-client-dni').value.trim();
+
+      if (!name || !dni) {
+        showToast('Por favor completa Nombre y DNI.', 'error');
         return;
       }
 
       currentUserGuest = {
         registered: true,
         name: name,
-        dni: dni,
-        email: email
+        dni: dni
       };
 
       localStorage.setItem('connectflow_guest_user', JSON.stringify(currentUserGuest));
       updateGuestUI();
-      showToast('¡Datos guardados con éxito! Te recordaremos en tus próximas visitas.', 'success');
+      closeClientAuthModal();
+      showToast(`¡Bienvenido/a ${name}! Sesión recordada.`, 'success');
     }
 
     function logoutGuestUser() {
-      currentUserGuest = { registered: false, name: 'Usuario Invitado', dni: '', email: '' };
+      currentUserGuest = { registered: false, name: 'Usuario Invitado', dni: '' };
       localStorage.removeItem('connectflow_guest_user');
       updateGuestUI();
       showToast('Has cerrado la sesión de usuario.', 'info');
@@ -680,53 +717,49 @@
     function updateGuestUI() {
       const nameEl = document.getElementById('client-display-name');
       const detailEl = document.getElementById('client-display-detail');
-      const regBox = document.getElementById('client-registration-box');
+      const regActionArea = document.getElementById('client-reg-action-area');
       const avatarEl = document.getElementById('client-avatar');
 
       if (currentUserGuest.registered) {
         nameEl.textContent = currentUserGuest.name;
-        detailEl.textContent = `DNI: ${currentUserGuest.dni} | ${currentUserGuest.email}`;
+        detailEl.textContent = `DNI: ${currentUserGuest.dni}`;
         avatarEl.innerHTML = `<span class="uppercase">${currentUserGuest.name.charAt(0)}</span>`;
-        avatarEl.className = "w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-lg border border-emerald-200 shadow-inner";
+        avatarEl.className = "w-10 h-10 min-w-[2.5rem] rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-base border border-emerald-200 shadow-inner";
         
-        regBox.innerHTML = `
-          <div class="text-xs text-slate-600 bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl flex items-center justify-between">
-            <span><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Sesión Guardada</span>
-            <button onclick="logoutGuestUser()" class="text-red-600 hover:underline font-semibold text-[11px]">Salir</button>
+        regActionArea.innerHTML = `
+          <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl flex items-center justify-between text-xs">
+            <span class="sidebar-text hidden text-emerald-800 font-medium truncate"><i class="fa-solid fa-check-circle text-emerald-600 mr-1"></i> Sesión Recordada</span>
+            <button onclick="logoutGuestUser()" title="Salir" class="text-red-600 hover:text-red-700 font-bold p-1">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
           </div>
         `;
       } else {
         nameEl.textContent = 'Usuario Invitado';
         detailEl.textContent = 'Sin registro previo';
         avatarEl.innerHTML = `<i class="fa-solid fa-user"></i>`;
-        avatarEl.className = "w-12 h-12 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-lg border border-sky-200 shadow-inner";
+        avatarEl.className = "w-10 h-10 min-w-[2.5rem] rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-base border border-sky-200 shadow-inner";
         
-        regBox.innerHTML = `
-          <p class="text-xs text-slate-600 font-medium mb-2"><i class="fa-solid fa-id-card text-sky-600 mr-1"></i> Registrate para recordar tu sesión:</p>
-          <div class="space-y-2">
-            <input type="text" id="reg-name" placeholder="Nombre Completo" class="w-full text-xs p-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
-            <input type="text" id="reg-dni" placeholder="DNI / Cédula" class="w-full text-xs p-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
-            <input type="email" id="reg-email" placeholder="Correo Electrónico" class="w-full text-xs p-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
-            <button onclick="registerGuestUser()" class="w-full bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold py-2 rounded-lg transition shadow">
-              Guardar Mis Datos
-            </button>
-          </div>
+        regActionArea.innerHTML = `
+          <button onclick="openClientAuthModal()" title="Ingresar con Registro" class="w-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 p-2.5 rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition shadow-sm">
+            <i class="fa-solid fa-user-check text-sky-600 text-sm"></i>
+            <span class="sidebar-text hidden truncate">Ingresar con Registro</span>
+          </button>
         `;
       }
       renderTopNav();
     }
 
-    // --- RENDER HEADER / NAVIGATION BAR ---
     function renderTopNav() {
       const container = document.getElementById('top-nav-actions');
       if (currentStaffUser) {
         container.innerHTML = `
           <div class="flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <span class="text-xs text-slate-200 font-medium">Modo Staff: <b>${currentStaffUser.username}</b> (${currentStaffUser.role})</span>
+            <span class="text-xs text-slate-200 font-medium">Staff: <b>${currentStaffUser.username}</b> (${currentStaffUser.role})</span>
           </div>
           <button onclick="switchMainTab('staff')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-xl font-semibold shadow transition">
-            Ir al Panel Staff
+            Panel Staff
           </button>
         `;
       } else {
@@ -755,49 +788,41 @@
       }
     }
 
-    // --- CHAT ENCADENADO Y BOT CLIENTE ---
+    // --- CHAT BOT CLIENTE ---
     function resetBotChat() {
       currentChatMode = 'bot';
       guestChatHistory = [];
       
       const badge = document.getElementById('chat-mode-badge');
-      badge.className = "px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center justify-between";
-      badge.innerHTML = `<span><i class="fa-solid fa-robot mr-1.5"></i> Bot Interactivo Activo</span><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>`;
+      badge.className = "p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center justify-center lg:justify-between";
+      badge.innerHTML = `<span class="flex items-center gap-1.5"><i class="fa-solid fa-robot"></i> <span class="sidebar-text ${isSidebarExpanded ? '' : 'hidden'}">Bot Activo</span></span><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse hidden lg:block"></span>`;
 
       document.getElementById('chat-header-title').textContent = "Asistente Virtual Automatizado";
       document.getElementById('chat-header-sub').textContent = "Responde seleccionando las opciones encadenadas";
 
-      // Insertar primer nodo
       triggerBotNode("start");
     }
 
     function triggerBotNode(nodeId) {
       const node = botTree[nodeId] || botTree["start"];
-      
-      // Agregar mensaje del Bot
-      const botMsg = {
+      guestChatHistory.push({
         sender: 'bot',
         text: node.message,
         imageUrl: node.imageUrl || null,
         options: node.options || [],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-
-      guestChatHistory.push(botMsg);
+      });
       renderClientMessages();
     }
 
     function handleOptionClick(option) {
-      // Registrar elección del usuario
       guestChatHistory.push({
         sender: 'user',
         text: option.text,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
-
       renderClientMessages();
 
-      // Evaluar acción u otro nodo encadenado
       setTimeout(() => {
         if (option.action) {
           if (option.action === 'request_operator') requestHumanOperator('General');
@@ -814,13 +839,12 @@
       currentChatMode = 'operator';
 
       const badge = document.getElementById('chat-mode-badge');
-      badge.className = "px-3 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center justify-between";
-      badge.innerHTML = `<span><i class="fa-solid fa-headset mr-1.5"></i> Derivado a Operador (${department})</span><span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>`;
+      badge.className = "p-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center justify-center lg:justify-between";
+      badge.innerHTML = `<span class="flex items-center gap-1.5"><i class="fa-solid fa-headset"></i> <span class="sidebar-text ${isSidebarExpanded ? '' : 'hidden'}">Operador Live</span></span><span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping hidden lg:block"></span>`;
 
       document.getElementById('chat-header-title').textContent = `Atención En Vivo - Área ${department}`;
       document.getElementById('chat-header-sub').textContent = "Conectado con el equipo de operadores";
 
-      // Generar o actualizar ticket en Firestore
       const ticketId = 'ticket_' + (currentUserGuest.dni || Date.now());
       currentActiveTicketId = ticketId;
 
@@ -828,15 +852,14 @@
         id: ticketId,
         userName: currentUserGuest.name,
         userDni: currentUserGuest.dni || 'Sin DNI',
-        userEmail: currentUserGuest.email || 'Sin Email',
         department: department,
-        status: 'pending', // 'pending', 'attended', 'closed'
+        status: 'pending',
         operatorAssigned: null,
         messages: [
           ...guestChatHistory,
           {
             sender: 'system',
-            text: `Solicitud de derivación enviada al área de ${department}. Un operador te responderá en breve.`,
+            text: `Solicitud de derivación enviada al área de ${department}. Un operador te atenderá en breve.`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ],
@@ -846,7 +869,6 @@
       if (window.fbDb) {
         window.fbSetDoc(window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'tickets', ticketId), ticketData);
       } else {
-        // Fallback local
         const existingIdx = operatorTickets.findIndex(t => t.id === ticketId);
         if (existingIdx >= 0) operatorTickets[existingIdx] = ticketData;
         else operatorTickets.push(ticketData);
@@ -855,7 +877,7 @@
 
       guestChatHistory = ticketData.messages;
       renderClientMessages();
-      showToast(`Solicitud de derivación enviada al área: ${department}`, 'info');
+      showToast(`Derivación solicitada al área: ${department}`, 'info');
     }
 
     function renderClientMessages() {
@@ -888,27 +910,21 @@
 
         let imageHTML = '';
         if (msg.imageUrl) {
-          imageHTML = `
-            <img src="${msg.imageUrl}" onclick="openImageViewer('${msg.imageUrl}')" class="max-w-xs max-h-48 rounded-xl my-2 cursor-pointer border border-black/10 hover:opacity-95 transition shadow-sm" alt="adjunto">
-          `;
+          imageHTML = `<img src="${msg.imageUrl}" onclick="openImageViewer('${msg.imageUrl}')" class="max-w-xs max-h-48 rounded-xl my-2 cursor-pointer border border-black/10 hover:opacity-95 transition shadow-sm">`;
         }
 
         let optionsHTML = '';
-        if (isBot && msg.options && msg.options.length > 0) {
-          // Si es el último mensaje del bot, mostrar botones activos
-          const isLastMessage = index === guestChatHistory.length - 1;
-          if (isLastMessage) {
-            optionsHTML = `<div class="mt-3 space-y-2">`;
-            msg.options.forEach((opt) => {
-              optionsHTML += `
-                <button onclick='handleOptionClick(${JSON.stringify(opt)})' class="w-full text-left bg-sky-50 hover:bg-sky-100 text-sky-800 font-medium text-xs py-2 px-3 rounded-xl border border-sky-200 transition flex items-center justify-between group">
-                  <span>${opt.text}</span>
-                  <i class="fa-solid fa-chevron-right text-[10px] text-sky-500 group-hover:translate-x-0.5 transition-transform"></i>
-                </button>
-              `;
-            });
-            optionsHTML += `</div>`;
-          }
+        if (isBot && msg.options && msg.options.length > 0 && index === guestChatHistory.length - 1) {
+          optionsHTML = `<div class="mt-3 space-y-2">`;
+          msg.options.forEach((opt) => {
+            optionsHTML += `
+              <button onclick='handleOptionClick(${JSON.stringify(opt)})' class="w-full text-left bg-sky-50 hover:bg-sky-100 text-sky-800 font-medium text-xs py-2 px-3 rounded-xl border border-sky-200 transition flex items-center justify-between group">
+                <span>${opt.text}</span>
+                <i class="fa-solid fa-chevron-right text-[10px] text-sky-500 group-hover:translate-x-0.5 transition-transform"></i>
+              </button>
+            `;
+          });
+          optionsHTML += `</div>`;
         }
 
         const senderLabel = isUser ? 'Tú' : isOperator ? (msg.operatorName || 'Operador Humano') : 'Asistente Bot';
@@ -931,15 +947,10 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    // --- ENVÍO DE MENSAJES Y MANEJO DE IMÁGENES (CLIENTE) ---
+    // --- ENVIAR MENSAJES CON IMÁGENES ---
     function handleFileSelect(e) {
       const file = e.target.files[0];
       if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        showToast('Por favor selecciona un archivo de imagen válido.', 'error');
-        return;
-      }
 
       const reader = new FileReader();
       reader.onload = function(evt) {
@@ -976,21 +987,18 @@
       clearImagePreview();
 
       if (currentChatMode === 'operator' && currentActiveTicketId) {
-        // Enviar a Firestore / Operadores Live
         if (window.fbDb) {
-          const ticketRef = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'tickets', currentActiveTicketId);
-          window.fbUpdateDoc(ticketRef, {
+          window.fbUpdateDoc(window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'tickets', currentActiveTicketId), {
             messages: guestChatHistory,
             updatedAt: Date.now()
           });
         }
       } else {
-        // Si está en modo bot, respuesta automática de fallback si escribe texto directo
         renderClientMessages();
         setTimeout(() => {
           guestChatHistory.push({
             sender: 'bot',
-            text: "Recibí tu mensaje. Puedes seleccionar una de las opciones del menú para continuar o solicitar un operador.",
+            text: "Recibí tu consulta. Selecciona una opción del menú para continuar:",
             options: botTree["start"] ? botTree["start"].options : [],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
@@ -1001,22 +1009,16 @@
       renderClientMessages();
     }
 
-    // --- CONSOLA DE ATENCIÓN DE OPERADORES ---
+    // --- CONSOLA OPERADOR ---
     function renderOperatorQueue() {
       const queueList = document.getElementById('operator-queue-list');
       const countBadge = document.getElementById('operator-queue-count');
 
-      // Filtrar tickets activos
       const pendingTickets = operatorTickets.filter(t => t.status !== 'closed');
       countBadge.textContent = pendingTickets.length;
 
       if (pendingTickets.length === 0) {
-        queueList.innerHTML = `
-          <div class="text-center py-8 text-slate-400 text-xs">
-            <i class="fa-solid fa-inbox text-2xl mb-1"></i>
-            <p>No hay derivaciones pendientes.</p>
-          </div>
-        `;
+        queueList.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs"><i class="fa-solid fa-inbox text-2xl mb-1"></i><p>No hay derivaciones pendientes.</p></div>`;
         return;
       }
 
@@ -1029,12 +1031,9 @@
           <div onclick="selectTicketToAttend('${t.id}')" class="p-3 rounded-xl border cursor-pointer transition ${isSelected ? 'bg-indigo-50 border-indigo-300 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300'}">
             <div class="flex items-center justify-between mb-1">
               <span class="font-bold text-xs text-slate-800 truncate">${t.userName}</span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}">
-                ${t.status === 'pending' ? 'Pendiente' : 'En Atención'}
-              </span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}">${t.status === 'pending' ? 'Pendiente' : 'Atendiendo'}</span>
             </div>
             <p class="text-[11px] text-slate-500 mb-1">Área: <b>${t.department || 'General'}</b> | DNI: ${t.userDni}</p>
-            <p class="text-[10px] text-slate-400 truncate">Mensajes: ${t.messages ? t.messages.length : 0}</p>
           </div>
         `;
       });
@@ -1045,7 +1044,6 @@
       const ticket = operatorTickets.find(t => t.id === ticketId);
       if (!ticket) return;
 
-      // Marcar como atendido por el operador actual
       if (currentStaffUser && ticket.status === 'pending') {
         ticket.status = 'attended';
         ticket.operatorAssigned = currentStaffUser.username;
@@ -1058,7 +1056,7 @@
       }
 
       document.getElementById('active-chat-user-title').textContent = `${ticket.userName} (${ticket.department})`;
-      document.getElementById('active-chat-user-subtitle').textContent = `DNI: ${ticket.userDni} | Email: ${ticket.userEmail}`;
+      document.getElementById('active-chat-user-subtitle').textContent = `DNI: ${ticket.userDni}`;
       document.getElementById('btn-close-ticket').classList.remove('hidden');
       
       document.getElementById('operator-input-text').disabled = false;
@@ -1071,7 +1069,6 @@
     function renderOperatorActiveChat() {
       const container = document.getElementById('operator-chat-messages');
       const ticket = operatorTickets.find(t => t.id === currentActiveTicketId);
-
       if (!ticket || !ticket.messages) return;
 
       container.innerHTML = '';
@@ -1080,11 +1077,7 @@
         const isSystem = msg.sender === 'system';
 
         if (isSystem) {
-          container.innerHTML += `
-            <div class="text-center text-[10px] text-slate-400 my-1 font-medium">
-              --- ${msg.text} ---
-            </div>
-          `;
+          container.innerHTML += `<div class="text-center text-[10px] text-slate-400 my-1 font-medium">--- ${msg.text} ---</div>`;
           return;
         }
 
@@ -1120,7 +1113,7 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         selectedOperatorFileBase64 = evt.target.result;
-        showToast('Imagen cargada y lista para responder.', 'info');
+        showToast('Imagen adjuntada lista para responder.', 'info');
       };
       reader.readAsDataURL(file);
     }
@@ -1131,15 +1124,13 @@
       const text = input.value.trim();
 
       if (!text && !selectedOperatorFileBase64) return;
-      if (!currentActiveTicketId) return;
-
       const ticket = operatorTickets.find(t => t.id === currentActiveTicketId);
       if (!ticket) return;
 
       const newMsg = {
         sender: 'operator',
         operatorName: currentStaffUser ? `${currentStaffUser.username} (${currentStaffUser.role})` : 'Operador',
-        text: text || 'Imagen enviada por operador',
+        text: text || 'Imagen adjunta',
         imageUrl: selectedOperatorFileBase64 || null,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -1156,25 +1147,15 @@
 
       input.value = '';
       selectedOperatorFileBase64 = null;
-      document.getElementById('operator-file-input').value = '';
-
       renderOperatorActiveChat();
     }
 
     function resolveCurrentTicket() {
       if (!currentActiveTicketId) return;
-      
       if (window.fbDb) {
-        window.fbUpdateDoc(window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'tickets', currentActiveTicketId), {
-          status: 'closed'
-        });
-      } else {
-        const ticket = operatorTickets.find(t => t.id === currentActiveTicketId);
-        if (ticket) ticket.status = 'closed';
-        renderOperatorQueue();
+        window.fbUpdateDoc(window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'tickets', currentActiveTicketId), { status: 'closed' });
       }
-
-      showToast('Consulta marcada como finalizada.', 'success');
+      showToast('Consulta finalizada.', 'success');
       currentActiveTicketId = null;
       document.getElementById('active-chat-user-title').textContent = "Selecciona una conversación";
       document.getElementById('active-chat-user-subtitle').textContent = "esperando selección...";
@@ -1184,20 +1165,40 @@
       document.getElementById('operator-send-btn').disabled = true;
     }
 
-    // --- CHAT INTERNO PRIVADO DE STAFF ---
+    // --- CHAT INTERNO PRIVADO & BROADCAST MULTIPLE ---
+    function selectInternalRecipient(recipientUsername) {
+      internalSelectedRecipient = recipientUsername;
+
+      const btnAll = document.getElementById('recipient-btn-ALL');
+      if (recipientUsername === 'ALL') {
+        btnAll.className = "p-2.5 mb-2 rounded-xl bg-indigo-600 text-white font-semibold text-xs flex items-center justify-between shadow-sm cursor-pointer";
+        document.getElementById('internal-chat-header-title').innerHTML = `<i class="fa-solid fa-bullhorn text-indigo-500 mr-2"></i> Canal Privado General (Broadcast a Todos)`;
+      } else {
+        btnAll.className = "p-2.5 mb-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 cursor-pointer font-semibold text-xs flex items-center justify-between shadow-sm";
+        document.getElementById('internal-chat-header-title').innerHTML = `<i class="fa-solid fa-lock text-indigo-600 mr-2"></i> Chat Privado Directo con: <b class="text-indigo-700">${recipientUsername}</b>`;
+      }
+
+      renderInternalStaffList();
+      renderInternalChat();
+    }
+
     function renderInternalStaffList() {
       const container = document.getElementById('internal-staff-list');
       container.innerHTML = '';
 
       staffUsers.forEach(u => {
-        const isMe = currentStaffUser && currentStaffUser.username === u.username;
+        if (currentStaffUser && u.username === currentStaffUser.username) return;
+
+        const isSelected = internalSelectedRecipient === u.username;
+        const bg = isSelected ? 'bg-indigo-600 text-white font-bold shadow' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300';
+
         container.innerHTML += `
-          <div class="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 text-xs">
-            <div class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span class="font-semibold text-slate-800">${u.username} ${isMe ? '(Tú)' : ''}</span>
+          <div onclick="selectInternalRecipient('${u.username}')" class="p-2.5 rounded-xl border ${bg} cursor-pointer transition flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2 truncate">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="truncate">${u.username}</span>
             </div>
-            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">${u.role}</span>
+            <span class="text-[9px] ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600'} px-2 py-0.5 rounded font-medium truncate">${u.role}</span>
           </div>
         `;
       });
@@ -1207,12 +1208,21 @@
       const container = document.getElementById('internal-chat-messages');
       container.innerHTML = '';
 
-      if (internalMessages.length === 0) {
-        container.innerHTML = `<div class="text-center text-slate-400 py-10 text-xs">No hay mensajes privados recientes en el equipo.</div>`;
+      const filtered = internalMessages.filter(m => {
+        if (internalSelectedRecipient === 'ALL') {
+          return m.recipient === 'ALL';
+        } else {
+          return (m.senderUsername === currentStaffUser?.username && m.recipient === internalSelectedRecipient) ||
+                 (m.senderUsername === internalSelectedRecipient && m.recipient === currentStaffUser?.username);
+        }
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center text-slate-400 py-12 text-xs"><i class="fa-regular fa-comments text-3xl mb-2"></i><p>No hay mensajes en esta conversación privada.</p></div>`;
         return;
       }
 
-      internalMessages.forEach(m => {
+      filtered.forEach(m => {
         const isMe = currentStaffUser && currentStaffUser.username === m.senderUsername;
         const align = isMe ? 'justify-end' : 'justify-start';
         const bg = isMe ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none';
@@ -1221,7 +1231,7 @@
           <div class="flex ${align} mb-2">
             <div class="max-w-[75%] ${bg} p-3 text-xs shadow-sm">
               <div class="flex items-center justify-between gap-3 text-[9px] opacity-75 mb-1 font-bold">
-                <span>${m.senderUsername} (${m.senderRole})</span>
+                <span>${m.senderUsername} (${m.senderRole}) ${m.recipient === 'ALL' ? '📢 Todos' : '🔒 Privado'}</span>
                 <span>${m.time || ''}</span>
               </div>
               <p>${m.text}</p>
@@ -1242,6 +1252,7 @@
       const msgObj = {
         senderUsername: currentStaffUser.username,
         senderRole: currentStaffUser.role,
+        recipient: internalSelectedRecipient,
         text: text,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         timestamp: Date.now()
@@ -1257,7 +1268,7 @@
       input.value = '';
     }
 
-    // --- PANEL DISEÑADOR: EDITOR DEL BOT ENCADENADO ---
+    // --- DISEÑADOR BOT ---
     function renderBotTreeList() {
       const list = document.getElementById('designer-nodes-list');
       if (!list) return;
@@ -1313,8 +1324,8 @@
           <i class="fa-solid fa-xmark"></i>
         </button>
         <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase">Texto del Botón</label>
-          <input type="text" class="opt-text w-full p-2 border border-slate-300 rounded-lg text-xs" value="${text}" placeholder="Ej: Ver Planes">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase">Texto Botón</label>
+          <input type="text" class="opt-text w-full p-2 border border-slate-300 rounded-lg text-xs" value="${text}" placeholder="Ej: Ver Servicios">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -1322,7 +1333,7 @@
             <input type="text" class="opt-next w-full p-2 border border-slate-300 rounded-lg text-xs font-mono" value="${nextNode}" placeholder="ej: servicios">
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase">Acción Especial (Opcional)</label>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase">Acción Especial</label>
             <select class="opt-action w-full p-2 border border-slate-300 rounded-lg text-xs bg-white">
               <option value="" ${action === '' ? 'selected' : ''}>-- Ninguna --</option>
               <option value="request_operator" ${action === 'request_operator' ? 'selected' : ''}>Derivar a Operador General</option>
@@ -1338,42 +1349,34 @@
     }
 
     function createNewBotNode() {
-      const newId = prompt("Ingresa el ID identificador para el nuevo paso del bot (ej: precios_2026):");
+      const newId = prompt("Ingresa el ID del nuevo paso del bot:");
       if (!newId) return;
 
       const cleanId = newId.trim().toLowerCase().replace(/\s+/g, '_');
       if (botTree[cleanId]) {
-        showToast("Ya existe un nodo con este ID.", "error");
+        showToast("Ya existe ese ID.", "error");
         return;
       }
 
-      botTree[cleanId] = {
-        id: cleanId,
-        message: "Nuevo mensaje configurado por el diseñador.",
-        imageUrl: "",
-        options: []
-      };
-
+      botTree[cleanId] = { id: cleanId, message: "Mensaje configurado por el diseñador.", imageUrl: "", options: [] };
       saveBotTreeToFirestore();
       renderBotTreeList();
       selectNodeToEdit(cleanId);
-      showToast(`Nuevo nodo '${cleanId}' creado.`, 'success');
     }
 
     function deleteCurrentNode() {
       const nodeId = document.getElementById('node-edit-id').value;
       if (nodeId === 'start') {
-        showToast("El nodo 'start' es principal y no se puede eliminar.", 'error');
+        showToast("El nodo 'start' no se puede eliminar.", 'error');
         return;
       }
 
-      if (confirm(`¿Estás seguro de eliminar el nodo '${nodeId}'?`)) {
+      if (confirm(`¿Eliminar nodo '${nodeId}'?`)) {
         delete botTree[nodeId];
         saveBotTreeToFirestore();
         renderBotTreeList();
         document.getElementById('designer-editor-form').classList.add('hidden');
         document.getElementById('designer-editor-empty').classList.remove('hidden');
-        showToast("Nodo eliminado.", "info");
       }
     }
 
@@ -1389,22 +1392,13 @@
         const text = r.querySelector('.opt-text').value.trim();
         const nextNode = r.querySelector('.opt-next').value.trim();
         const action = r.querySelector('.opt-action').value;
-
-        if (text) {
-          options.push({ text, nextNode, action });
-        }
+        if (text) options.push({ text, nextNode, action });
       });
 
-      botTree[nodeId] = {
-        id: nodeId,
-        message: message,
-        imageUrl: imageUrl,
-        options: options
-      };
-
+      botTree[nodeId] = { id: nodeId, message, imageUrl, options };
       saveBotTreeToFirestore();
       renderBotTreeList();
-      showToast("Paso del bot guardado correctamente.", "success");
+      showToast("Paso del bot guardado.", "success");
     }
 
     function saveBotTreeToFirestore() {
@@ -1414,7 +1408,7 @@
       }
     }
 
-    // --- PANEL DISEÑADOR: GESTIÓN DE USUARIOS STAFF ---
+    // --- GESTIÓN USUARIOS STAFF ---
     function renderStaffUsersTable() {
       const tbody = document.getElementById('users-table-body');
       if (!tbody) return;
@@ -1424,22 +1418,10 @@
         tbody.innerHTML += `
           <tr>
             <td class="p-3 font-semibold text-slate-800">${u.username}</td>
-            <td class="p-3">
-              <span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md font-medium border border-indigo-100">
-                ${u.role}
-              </span>
-            </td>
-            <td class="p-3">
-              <span class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Activo
-              </span>
-            </td>
+            <td class="p-3"><span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md border border-indigo-100 font-medium">${u.role}</span></td>
+            <td class="p-3"><span class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Activo</span></td>
             <td class="p-3 text-right">
-              ${u.username !== 'hermes' ? `
-                <button onclick="deleteStaffUser(${index})" class="text-red-500 hover:text-red-700 text-xs font-semibold">
-                  Eliminar
-                </button>
-              ` : `<span class="text-xs text-slate-400">Protegido</span>`}
+              ${u.username !== 'hermes' ? `<button onclick="deleteStaffUser(${index})" class="text-red-500 hover:text-red-700 text-xs font-semibold">Eliminar</button>` : `<span class="text-xs text-slate-400">Protegido</span>`}
             </td>
           </tr>
         `;
@@ -1459,17 +1441,13 @@
 
       staffUsers.push({ username, password, role, status: 'online' });
       saveStaffUsersToFirestore();
-      
-      document.getElementById('new-user-username').value = '';
-      document.getElementById('new-user-password').value = '';
-      showToast(`Usuario Staff '${username}' creado con éxito.`, "success");
+      showToast(`Usuario '${username}' registrado.`, "success");
     }
 
     function deleteStaffUser(index) {
-      if (confirm("¿Estás seguro de eliminar este usuario de staff?")) {
+      if (confirm("¿Eliminar usuario?")) {
         staffUsers.splice(index, 1);
         saveStaffUsersToFirestore();
-        showToast("Usuario eliminado.", "info");
       }
     }
 
@@ -1483,14 +1461,9 @@
       }
     }
 
-    // --- MODAL DE LOGIN STAFF ---
-    function openStaffModal() {
-      document.getElementById('modal-staff-login').classList.remove('hidden');
-    }
-
-    function closeStaffModal() {
-      document.getElementById('modal-staff-login').classList.add('hidden');
-    }
+    // --- MODALES Y TABS ---
+    function openStaffModal() { document.getElementById('modal-staff-login').classList.remove('hidden'); }
+    function closeStaffModal() { document.getElementById('modal-staff-login').classList.add('hidden'); }
 
     function handleStaffLogin(e) {
       e.preventDefault();
@@ -1504,17 +1477,10 @@
         closeStaffModal();
         renderTopNav();
         switchMainTab('staff');
-        
-        // Ajustar vistas según rol
-        if (found.role === 'Diseñador') {
-          switchStaffTab('designer');
-        } else {
-          switchStaffTab('operators');
-        }
-
-        showToast(`¡Bienvenido/a ${found.username}! Rol: ${found.role}`, 'success');
+        switchStaffTab(found.role === 'Diseñador' ? 'designer' : 'operators');
+        showToast(`Bienvenido ${found.username}!`, 'success');
       } else {
-        showToast("Credenciales inválidas.", "error");
+        showToast("Credenciales incorrectas.", "error");
       }
     }
 
@@ -1522,26 +1488,20 @@
       currentStaffUser = null;
       renderTopNav();
       switchMainTab('chat');
-      showToast("Has salido del panel de Staff.", "info");
+      showToast("Sesión de Staff cerrada.", "info");
     }
 
     function switchStaffTab(tab) {
-      // Pestañas
       document.getElementById('staff-tab-operators').classList.add('hidden');
       document.getElementById('staff-tab-internal').classList.add('hidden');
       document.getElementById('staff-tab-designer').classList.add('hidden');
       document.getElementById('staff-tab-users').classList.add('hidden');
 
-      // Restablecer estilos botones
-      const btnIds = ['operators', 'internal', 'designer', 'users'];
-      btnIds.forEach(id => {
+      ['operators', 'internal', 'designer', 'users'].forEach(id => {
         const btn = document.getElementById(`tab-btn-${id}`);
-        if (btn) {
-          btn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-1.5";
-        }
+        if (btn) btn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-1.5";
       });
 
-      // Mostrar seleccionado
       const activeTab = document.getElementById(`staff-tab-${tab}`);
       const activeBtn = document.getElementById(`tab-btn-${tab}`);
       if (activeTab) activeTab.classList.remove('hidden');
@@ -1553,7 +1513,6 @@
       }
     }
 
-    // --- VISUALIZADOR DE IMÁGENES & TOASTS ---
     function openImageViewer(url) {
       document.getElementById('full-modal-image').src = url;
       document.getElementById('modal-image-viewer').classList.remove('hidden');
@@ -1566,19 +1525,13 @@
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-
       const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-sky-600';
-      const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info';
 
       toast.className = `${bg} text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto`;
-      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
 
       container.appendChild(toast);
-
-      setTimeout(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      }, 10);
-
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
       setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-2');
         setTimeout(() => toast.remove(), 300);

@@ -54,6 +54,29 @@
   <!-- Notification Toast Banner -->
   <div id="toast-container" class="fixed top-20 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
+  <!-- POP-UP FLOATING NOTIFICATION FOR OPERATOR -->
+  <div id="operator-popup-alert" class="fixed bottom-5 right-5 z-50 hidden transition-all duration-300 transform translate-y-5 opacity-0">
+    <div class="bg-indigo-900 text-white border-2 border-indigo-400 rounded-2xl p-4 shadow-2xl max-w-sm flex items-start space-x-3 relative">
+      <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-xl text-white shrink-0 animate-bounce">
+        <i class="fa-solid fa-bell"></i>
+      </div>
+      <div class="flex-1">
+        <h4 class="font-bold text-sm text-indigo-200 flex items-center justify-between">
+          <span>¡Nueva Solicitud Asignada!</span>
+          <span class="text-[10px] bg-indigo-700 px-2 py-0.5 rounded-full font-mono">AHORA</span>
+        </h4>
+        <p id="popup-client-name" class="text-xs font-semibold text-white mt-1">Cliente Asignado</p>
+        <p id="popup-dept-info" class="text-[11px] text-indigo-300">Área: General</p>
+        <button onclick="handlePopupClick()" class="mt-2.5 w-full bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-comments"></i> Atender Chat Inmediatamente
+        </button>
+      </div>
+      <button onclick="closeOperatorPopup()" class="text-indigo-300 hover:text-white text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- MAIN APP CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 md:p-6 flex flex-col">
 
@@ -96,7 +119,7 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse hidden lg:block"></span>
             </div>
             
-            <button id="btn-request-operator" onclick="requestHumanOperator()" title="Derivar con Operador" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 p-2.5 rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition">
+            <button id="btn-request-operator" onclick="requestHumanOperator('General')" title="Derivar con Operador" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 p-2.5 rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition">
               <i class="fa-solid fa-headset text-sm"></i>
               <span class="sidebar-text hidden truncate">Hablar con Operador Humano</span>
             </button>
@@ -194,7 +217,7 @@
       <div id="staff-tab-operators" class="flex-1 flex flex-col md:flex-row overflow-hidden">
         <div class="w-full md:w-80 border-r border-slate-200 bg-slate-50 flex flex-col h-1/3 md:h-full">
           <div class="p-3 bg-slate-100 border-b border-slate-200 font-semibold text-xs text-slate-700 uppercase tracking-wider flex items-center justify-between">
-            <span><i class="fa-solid fa-list-check mr-1 text-sky-600"></i> Solicitudes Entrantes</span>
+            <span><i class="fa-solid fa-list-check mr-1 text-sky-600"></i> Mis Consultas Asignadas</span>
             <span id="operator-queue-count" class="bg-sky-600 text-white text-[10px] px-2 py-0.5 rounded-full">0</span>
           </div>
           <div id="operator-queue-list" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
@@ -238,19 +261,17 @@
         </div>
       </div>
 
-      <!-- TAB 2: CHAT INTERNO Y PRIVADO CON CUALQUIER MIEMBRO DE STAFF O TODOS -->
+      <!-- TAB 2: CHAT INTERNO Y PRIVADO -->
       <div id="staff-tab-internal" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden">
         <div class="w-full md:w-72 border-r border-slate-200 bg-slate-50 p-3 flex flex-col">
           <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-users mr-1"></i> Comunicar con:</h4>
           
-          <!-- Canal Broadcast Grupal -->
           <div onclick="selectInternalRecipient('ALL')" id="recipient-btn-ALL" class="p-2.5 mb-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 cursor-pointer font-semibold text-xs flex items-center justify-between shadow-sm">
             <span>📢 Todos (Broadcast Grupal)</span>
             <i class="fa-solid fa-bullhorn text-indigo-600"></i>
           </div>
 
           <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Mensajes Privados Directos (1 a 1)</div>
-          
           <div id="internal-staff-list" class="space-y-1.5 flex-1 overflow-y-auto"></div>
         </div>
 
@@ -273,7 +294,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: DISEÑADOR ARBOL BOT -->
+      <!-- TAB 3: DISEÑADOR ARBOL BOT (CON ESCALAMIENTO DE OPERADORES) -->
       <div id="staff-tab-designer" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden p-4 gap-4 bg-slate-50">
         <div class="w-full md:w-80 bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm">
           <div class="flex items-center justify-between pb-3 border-b border-slate-200">
@@ -313,13 +334,13 @@
 
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Opciones / Botones de Respuesta</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Opciones / Botones con Escalamiento de Operadores</label>
                 <button type="button" onclick="addOptionRowToEditor()" class="text-xs text-sky-600 hover:text-sky-700 font-semibold flex items-center gap-1">
                   <i class="fa-solid fa-circle-plus"></i> Agregar Opción
                 </button>
               </div>
 
-              <div id="node-options-container" class="space-y-3"></div>
+              <div id="node-options-container" class="space-y-4"></div>
             </div>
 
             <div class="pt-4 border-t border-slate-200 flex justify-end">
@@ -445,7 +466,7 @@
 
         <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-3 text-xs">
           <p class="font-bold"><i class="fa-solid fa-key mr-1"></i> Credenciales de Diseñador:</p>
-          <p class="mt-0.5 font-mono">Usuario: <b>Design</b> | Password: <b>password</b></p>
+          <p class="mt-0.5 font-mono">Usuario: <b>hermes</b> | Password: <b>Hjs2154</b></p>
         </div>
 
         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-600/20 text-sm">
@@ -521,6 +542,7 @@
     let selectedImageBase64 = null;
     let selectedOperatorFileBase64 = null;
     let internalSelectedRecipient = 'ALL';
+    let pendingPopupTicketId = null;
 
     let defaultBotTree = {
       "start": {
@@ -528,9 +550,17 @@
         message: "¡Hola! Bienvenido a nuestro servicio de atención Automatizado. ¿Cómo te podemos ayudar hoy?",
         imageUrl: "",
         options: [
-          { text: "Servicios y Consulta General", nextNode: "servicios" },
-          { text: "Zona y Horario de Atención", nextNode: "horarios" },
-          { text: "Hablar con un Operador Humano", action: "request_operator" }
+          { 
+            text: "Servicios y Consulta General", 
+            nextNode: "servicios" 
+          },
+          { 
+            text: "Hablar con Operador Humano (Escalamiento)", 
+            action: "request_escalated_operator",
+            op1: "carlos_reclamos",
+            op2: "maria_admin",
+            op3: "hermes"
+          }
         ]
       },
       "servicios": {
@@ -538,35 +568,21 @@
         message: "Ofrecemos soporte técnico, gestión administrativa y atención personalizada. Selecciona el área de tu interés:",
         imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
         options: [
-          { text: "Planes Administrativos", nextNode: "info_admin" },
-          { text: "Asistencia Técnica / Reclamos", nextNode: "info_reclamos" },
+          { 
+            text: "Planes Administrativos", 
+            action: "request_escalated_operator",
+            op1: "maria_admin",
+            op2: "hermes",
+            op3: ""
+          },
+          { 
+            text: "Asistencia Técnica / Reclamos", 
+            action: "request_escalated_operator",
+            op1: "carlos_reclamos",
+            op2: "hermes",
+            op3: ""
+          },
           { text: "Volver al Menú Principal", nextNode: "start" }
-        ]
-      },
-      "info_admin": {
-        id: "info_admin",
-        message: "Nuestras áreas administrativas te ayudan con contrataciones y facturación.",
-        imageUrl: "",
-        options: [
-          { text: "Derivar a Atención Administrativa", action: "request_operator_admin" },
-          { text: "Volver al Inicio", nextNode: "start" }
-        ]
-      },
-      "info_reclamos": {
-        id: "info_reclamos",
-        message: "Si tienes una falla o reclamo, puedes adjuntar fotos o comprobantes en el chat.",
-        imageUrl: "",
-        options: [
-          { text: "Contactar Área de Reclamos", action: "request_operator_reclamos" },
-          { text: "Volver al Inicio", nextNode: "start" }
-        ]
-      },
-      "horarios": {
-        id: "horarios",
-        message: "Nuestro Bot atiende las 24 hs. Los operadores atienden de Lunes a Viernes de 8:00 a 18:00 hs.",
-        imageUrl: "",
-        options: [
-          { text: "Volver al Inicio", nextNode: "start" }
         ]
       }
     };
@@ -575,9 +591,9 @@
 
     let staffUsers = [
       { username: 'hermes', password: 'Hjs2154', role: 'Diseñador', status: 'online' },
-      { username: 'yani', password: '1970', role: 'Administrativo', status: 'online' },
-      { username: 'coco', password: 'Cocolicho1965', role: 'Administrativo', status: 'online' },
-      { username: 'Gaby', password: '1989', role: 'Atención al Público', status: 'online' }
+      { username: 'maria_admin', password: '123', role: 'Administrativo', status: 'online' },
+      { username: 'carlos_reclamos', password: '123', role: 'Reclamos', status: 'online' },
+      { username: 'lucia_atencion', password: '123', role: 'Atención al Público', status: 'online' }
     ];
 
     let guestChatHistory = [];
@@ -594,6 +610,74 @@
       resetBotChat();
       applySidebarState();
     };
+
+    // --- SINTETIZADOR SONORO (WEB AUDIO API ALERTA OPERADOR) ---
+    function playNotificationSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+
+        // Primer Tono
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(880, ctx.currentTime); // A5
+        gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start();
+        osc1.stop(ctx.currentTime + 0.25);
+
+        // Segundo Tono agudo
+        setTimeout(() => {
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(1320, ctx.currentTime); // E6
+          gain2.gain.setValueAtTime(0.4, ctx.currentTime);
+          gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start();
+          osc2.stop(ctx.currentTime + 0.35);
+        }, 120);
+
+      } catch (e) {
+        console.log("Audio Alert Info:", e);
+      }
+    }
+
+    // --- POP-UP ALERTA OPERADOR ---
+    function triggerOperatorPopup(ticket) {
+      pendingPopupTicketId = ticket.id;
+      document.getElementById('popup-client-name').textContent = `Cliente: ${ticket.userName} (${ticket.userDni})`;
+      document.getElementById('popup-dept-info').textContent = `Asignado a ti (${currentStaffUser ? currentStaffUser.username : ''})`;
+
+      const popup = document.getElementById('operator-popup-alert');
+      popup.classList.remove('hidden');
+      setTimeout(() => {
+        popup.classList.remove('translate-y-5', 'opacity-0');
+      }, 20);
+
+      playNotificationSound();
+    }
+
+    function closeOperatorPopup() {
+      const popup = document.getElementById('operator-popup-alert');
+      popup.classList.add('opacity-0', 'translate-y-5');
+      setTimeout(() => popup.classList.add('hidden'), 300);
+    }
+
+    function handlePopupClick() {
+      closeOperatorPopup();
+      switchMainTab('staff');
+      switchStaffTab('operators');
+      if (pendingPopupTicketId) {
+        selectTicketToAttend(pendingPopupTicketId);
+      }
+    }
 
     // --- LOGICA TOGGLE Y MINIMIZAR MENU LATERAL ---
     function toggleSidebar() {
@@ -634,7 +718,7 @@
           }
         });
 
-        const staffDocRef = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users');
+        const staffDocRef = window.fbDoc(window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users'));
         window.fbOnSnapshot(staffDocRef, (docSnap) => {
           if (docSnap.exists() && docSnap.data().users) {
             staffUsers = docSnap.data().users;
@@ -648,7 +732,15 @@
         const ticketsCol = window.fbCollection(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'tickets');
         window.fbOnSnapshot(ticketsCol, (snapshot) => {
           let list = [];
-          snapshot.forEach(d => list.push({ id: d.id, ...d.data() }));
+          snapshot.forEach(d => {
+            const data = d.data();
+            list.push({ id: d.id, ...data });
+
+            // Verificar si hay nueva asignación directa al operador actual en sesión
+            if (currentStaffUser && data.assignedOperator === currentStaffUser.username && data.status === 'pending_assigned') {
+              triggerOperatorPopup({ id: d.id, ...data });
+            }
+          });
           operatorTickets = list;
           renderOperatorQueue();
           if (currentActiveTicketId) renderOperatorActiveChat();
@@ -666,7 +758,7 @@
       } catch (e) { console.warn("Firestore error", e); }
     }
 
-    // --- LOGIN / AUTENTICACIÓN CLIENTE CON DNI Y NOMBRE ---
+    // --- LOGIN / AUTENTICACIÓN CLIENTE ---
     function loadStoredGuestUser() {
       const stored = localStorage.getItem('connectflow_guest_user');
       if (stored) {
@@ -695,12 +787,7 @@
         return;
       }
 
-      currentUserGuest = {
-        registered: true,
-        name: name,
-        dni: dni
-      };
-
+      currentUserGuest = { registered: true, name, dni };
       localStorage.setItem('connectflow_guest_user', JSON.stringify(currentUserGuest));
       updateGuestUI();
       closeClientAuthModal();
@@ -788,7 +875,7 @@
       }
     }
 
-    // --- CHAT BOT CLIENTE ---
+    // --- BOT Y ESCALAMIENTO INTELIGENTE DE OPERADORES ---
     function resetBotChat() {
       currentChatMode = 'bot';
       guestChatHistory = [];
@@ -824,26 +911,62 @@
       renderClientMessages();
 
       setTimeout(() => {
-        if (option.action) {
-          if (option.action === 'request_operator') requestHumanOperator('General');
-          else if (option.action === 'request_operator_admin') requestHumanOperator('Administrativo');
-          else if (option.action === 'request_operator_reclamos') requestHumanOperator('Reclamos');
-          else if (option.action === 'request_operator_publico') requestHumanOperator('Atención al Público');
+        if (option.action === 'request_escalated_operator' || option.action === 'request_operator') {
+          processEscalatedOperatorRequest(option);
         } else if (option.nextNode) {
           triggerBotNode(option.nextNode);
         }
       }, 400);
     }
 
-    function requestHumanOperator(department = 'General') {
+    // LÓGICA DE ESCALAMIENTO HASTA 3 OPCIONES Y FALLBACK SI NADIE RESPONDE
+    function processEscalatedOperatorRequest(option) {
+      const candidates = [option.op1, option.op2, option.op3].filter(Boolean);
+      let assignedUser = null;
+
+      // Buscar el primer operador online/disponible de la lista de candidatos
+      for (let opUsername of candidates) {
+        const found = staffUsers.find(u => u.username === opUsername && u.status === 'online');
+        if (found) {
+          assignedUser = found;
+          break;
+        }
+      }
+
+      // Si no hay operador asignado específico disponible o la lista estaba vacía, verificar si hay alguien de staff online
+      if (!assignedUser && candidates.length === 0) {
+        assignedUser = staffUsers.find(u => u.status === 'online');
+      }
+
+      if (assignedUser) {
+        // OPERADOR DISPONIBLE ENCONTRADO
+        requestHumanOperatorWithAssignee(assignedUser.username, assignedUser.role);
+      } else {
+        // NINGÚN OPERADOR DISPONIBLE -> RESPUESTA AUTOMÁTICA FALLBACK
+        triggerFallbackOccupiedMessage();
+      }
+    }
+
+    function triggerFallbackOccupiedMessage() {
+      guestChatHistory.push({
+        sender: 'bot',
+        text: "Todos nuestros operadores se encuentran ocupados en este momento. Recuerde nuestro horario de atención (Lunes a Viernes de 8:00 a 18:00 hs). Puede dejar su consulta detallada y adjuntar una imagen aquí, y a la brevedad nos comunicaremos con usted.",
+        options: botTree["start"] ? botTree["start"].options : [],
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      renderClientMessages();
+      showToast('Todos los operadores están ocupados. Mensaje informativo enviado.', 'info');
+    }
+
+    function requestHumanOperatorWithAssignee(operatorUsername, department) {
       currentChatMode = 'operator';
 
       const badge = document.getElementById('chat-mode-badge');
       badge.className = "p-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center justify-center lg:justify-between";
-      badge.innerHTML = `<span class="flex items-center gap-1.5"><i class="fa-solid fa-headset"></i> <span class="sidebar-text ${isSidebarExpanded ? '' : 'hidden'}">Operador Live</span></span><span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping hidden lg:block"></span>`;
+      badge.innerHTML = `<span class="flex items-center gap-1.5"><i class="fa-solid fa-headset"></i> <span class="sidebar-text ${isSidebarExpanded ? '' : 'hidden'}">Asignado a: ${operatorUsername}</span></span><span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping hidden lg:block"></span>`;
 
-      document.getElementById('chat-header-title').textContent = `Atención En Vivo - Área ${department}`;
-      document.getElementById('chat-header-sub').textContent = "Conectado con el equipo de operadores";
+      document.getElementById('chat-header-title').textContent = `Atención En Vivo con ${operatorUsername}`;
+      document.getElementById('chat-header-sub').textContent = `Área: ${department}`;
 
       const ticketId = 'ticket_' + (currentUserGuest.dni || Date.now());
       currentActiveTicketId = ticketId;
@@ -853,13 +976,13 @@
         userName: currentUserGuest.name,
         userDni: currentUserGuest.dni || 'Sin DNI',
         department: department,
-        status: 'pending',
-        operatorAssigned: null,
+        assignedOperator: operatorUsername,
+        status: 'pending_assigned',
         messages: [
           ...guestChatHistory,
           {
             sender: 'system',
-            text: `Solicitud de derivación enviada al área de ${department}. Un operador te atenderá en breve.`,
+            text: `Derivación asignada a ${operatorUsername}. El operador ha sido notificado con alerta sonora y pop-up.`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ],
@@ -872,12 +995,16 @@
         const existingIdx = operatorTickets.findIndex(t => t.id === ticketId);
         if (existingIdx >= 0) operatorTickets[existingIdx] = ticketData;
         else operatorTickets.push(ticketData);
+
+        if (currentStaffUser && currentStaffUser.username === operatorUsername) {
+          triggerOperatorPopup(ticketData);
+        }
         renderOperatorQueue();
       }
 
       guestChatHistory = ticketData.messages;
       renderClientMessages();
-      showToast(`Derivación solicitada al área: ${department}`, 'info');
+      showToast(`Consulta asignada a ${operatorUsername}`, 'success');
     }
 
     function renderClientMessages() {
@@ -1014,24 +1141,25 @@
       const queueList = document.getElementById('operator-queue-list');
       const countBadge = document.getElementById('operator-queue-count');
 
-      const pendingTickets = operatorTickets.filter(t => t.status !== 'closed');
+      // Mostrar consultas que pertenezcan o estén asignadas al operador actual
+      const pendingTickets = operatorTickets.filter(t => t.status !== 'closed' && (!t.assignedOperator || t.assignedOperator === currentStaffUser?.username));
       countBadge.textContent = pendingTickets.length;
 
       if (pendingTickets.length === 0) {
-        queueList.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs"><i class="fa-solid fa-inbox text-2xl mb-1"></i><p>No hay derivaciones pendientes.</p></div>`;
+        queueList.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs"><i class="fa-solid fa-inbox text-2xl mb-1"></i><p>No tienes consultas asignadas pendientes.</p></div>`;
         return;
       }
 
       queueList.innerHTML = '';
       pendingTickets.forEach(t => {
         const isSelected = t.id === currentActiveTicketId;
-        const statusColor = t.status === 'pending' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        const statusColor = t.status.includes('pending') ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-100 text-emerald-800 border-emerald-200';
 
         queueList.innerHTML += `
           <div onclick="selectTicketToAttend('${t.id}')" class="p-3 rounded-xl border cursor-pointer transition ${isSelected ? 'bg-indigo-50 border-indigo-300 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300'}">
             <div class="flex items-center justify-between mb-1">
               <span class="font-bold text-xs text-slate-800 truncate">${t.userName}</span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}">${t.status === 'pending' ? 'Pendiente' : 'Atendiendo'}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}">${t.status.includes('pending') ? 'Asignado a ti' : 'En Atención'}</span>
             </div>
             <p class="text-[11px] text-slate-500 mb-1">Área: <b>${t.department || 'General'}</b> | DNI: ${t.userDni}</p>
           </div>
@@ -1044,7 +1172,7 @@
       const ticket = operatorTickets.find(t => t.id === ticketId);
       if (!ticket) return;
 
-      if (currentStaffUser && ticket.status === 'pending') {
+      if (currentStaffUser && ticket.status.includes('pending')) {
         ticket.status = 'attended';
         ticket.operatorAssigned = currentStaffUser.username;
         if (window.fbDb) {
@@ -1268,7 +1396,7 @@
       input.value = '';
     }
 
-    // --- DISEÑADOR BOT ---
+    // --- DISEÑADOR BOT CON CONFIGURACIÓN DE ESCALAMIENTO A 3 OPERADORES ---
     function renderBotTreeList() {
       const list = document.getElementById('designer-nodes-list');
       if (!list) return;
@@ -1305,47 +1433,89 @@
       optionsContainer.innerHTML = '';
 
       if (node.options && node.options.length > 0) {
-        node.options.forEach(opt => addOptionRowToEditor(opt.text, opt.nextNode, opt.action));
+        node.options.forEach(opt => addOptionRowToEditor(opt.text, opt.nextNode, opt.action, opt.op1, opt.op2, opt.op3));
       } else {
         addOptionRowToEditor();
       }
     }
 
-    function addOptionRowToEditor(text = '', nextNode = '', action = '') {
+    function addOptionRowToEditor(text = '', nextNode = '', action = '', op1 = '', op2 = '', op3 = '') {
       const container = document.getElementById('node-options-container');
       const rowId = 'opt_' + Date.now() + Math.random().toString(36).substring(2, 5);
 
       const div = document.createElement('div');
       div.id = rowId;
-      div.className = "p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 relative";
+      div.className = "p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative shadow-sm";
+
+      let staffOptionsHTML = `<option value="">-- Ninguno --</option>`;
+      staffUsers.forEach(u => {
+        staffOptionsHTML += `<option value="${u.username}">${u.username} (${u.role})</option>`;
+      });
 
       div.innerHTML = `
-        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 text-xs">
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="absolute top-2.5 right-2.5 text-slate-400 hover:text-red-500 text-xs">
           <i class="fa-solid fa-xmark"></i>
         </button>
         <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase">Texto Botón</label>
-          <input type="text" class="opt-text w-full p-2 border border-slate-300 rounded-lg text-xs" value="${text}" placeholder="Ej: Ver Servicios">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Texto del Botón</label>
+          <input type="text" class="opt-text w-full p-2 border border-slate-300 rounded-lg text-xs" value="${text}" placeholder="Ej: Hablar con Reclamos">
         </div>
+        
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase">Siguiente Nodo ID</label>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Siguiente Nodo ID</label>
             <input type="text" class="opt-next w-full p-2 border border-slate-300 rounded-lg text-xs font-mono" value="${nextNode}" placeholder="ej: servicios">
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase">Acción Especial</label>
-            <select class="opt-action w-full p-2 border border-slate-300 rounded-lg text-xs bg-white">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Acción Especial</label>
+            <select class="opt-action w-full p-2 border border-slate-300 rounded-lg text-xs bg-white" onchange="toggleEscalationOptions('${rowId}', this.value)">
               <option value="" ${action === '' ? 'selected' : ''}>-- Ninguna --</option>
-              <option value="request_operator" ${action === 'request_operator' ? 'selected' : ''}>Derivar a Operador General</option>
-              <option value="request_operator_admin" ${action === 'request_operator_admin' ? 'selected' : ''}>Derivar a Administrativo</option>
-              <option value="request_operator_reclamos" ${action === 'request_operator_reclamos' ? 'selected' : ''}>Derivar a Reclamos</option>
-              <option value="request_operator_publico" ${action === 'request_operator_publico' ? 'selected' : ''}>Derivar a Atención Público</option>
+              <option value="request_escalated_operator" ${action === 'request_escalated_operator' ? 'selected' : ''}>Derivar con Escalamiento de Operadores</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Opciones de Escalamiento Prioritario a 3 Operadores -->
+        <div class="escalation-box ${action === 'request_escalated_operator' ? '' : 'hidden'} bg-indigo-50/70 p-2.5 rounded-lg border border-indigo-100 space-y-2">
+          <label class="block text-[10px] font-bold text-indigo-900 uppercase"><i class="fa-solid fa-sitemap mr-1"></i> Cadena de Escalamiento Jerárquico (1º -> 2º -> 3º):</label>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[9px] font-semibold text-indigo-700">1º Opción (Primario)</label>
+              <select class="opt-op1 w-full p-1.5 border border-indigo-200 rounded text-xs bg-white">
+                ${staffOptionsHTML}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] font-semibold text-indigo-700">2º Opción (Secundario)</label>
+              <select class="opt-op2 w-full p-1.5 border border-indigo-200 rounded text-xs bg-white">
+                ${staffOptionsHTML}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] font-semibold text-indigo-700">3º Opción (Respaldo)</label>
+              <select class="opt-op3 w-full p-1.5 border border-indigo-200 rounded text-xs bg-white">
+                ${staffOptionsHTML}
+              </select>
+            </div>
           </div>
         </div>
       `;
 
       container.appendChild(div);
+
+      // Asignar valores seleccionados en los selects
+      if (op1) div.querySelector('.opt-op1').value = op1;
+      if (op2) div.querySelector('.opt-op2').value = op2;
+      if (op3) div.querySelector('.opt-op3').value = op3;
+    }
+
+    function toggleEscalationOptions(rowId, actionVal) {
+      const box = document.querySelector(`#${rowId} .escalation-box`);
+      if (actionVal === 'request_escalated_operator') {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
     }
 
     function createNewBotNode() {
@@ -1392,7 +1562,11 @@
         const text = r.querySelector('.opt-text').value.trim();
         const nextNode = r.querySelector('.opt-next').value.trim();
         const action = r.querySelector('.opt-action').value;
-        if (text) options.push({ text, nextNode, action });
+        const op1 = r.querySelector('.opt-op1')?.value || '';
+        const op2 = r.querySelector('.opt-op2')?.value || '';
+        const op3 = r.querySelector('.opt-op3')?.value || '';
+
+        if (text) options.push({ text, nextNode, action, op1, op2, op3 });
       });
 
       botTree[nodeId] = { id: nodeId, message, imageUrl, options };

@@ -589,18 +589,32 @@
 
     let botTree = { ...defaultBotTree };
 
+    // Operadores offline por defecto
     let staffUsers = [
-      { username: 'hermes', password: 'Hjs2154', role: 'Diseñador', status: 'online' },
-      { username: 'maria_admin', password: '123', role: 'Administrativo', status: 'online' },
-      { username: 'carlos_reclamos', password: '123', role: 'Reclamos', status: 'online' },
-      { username: 'lucia_atencion', password: '123', role: 'Atención al Público', status: 'online' }
+      { username: 'hermes', password: 'Hjs2154', role: 'Diseñador', status: 'offline' },
+      { username: 'maria_admin', password: '123', role: 'Administrativo', status: 'offline' },
+      { username: 'carlos_reclamos', password: '123', role: 'Reclamos', status: 'offline' },
+      { username: 'lucia_atencion', password: '123', role: 'Atención al Público', status: 'offline' }
     ];
 
     let guestChatHistory = [];
     let operatorTickets = [];
     let internalMessages = [];
 
+    // --- CARGA DE USUARIOS LOCALES (LOCALSTORAGE FALLBACK) ---
+    function loadStoredStaffUsers() {
+      const storedStaff = localStorage.getItem('connectflow_staff_users');
+      if (storedStaff) {
+        try {
+          staffUsers = JSON.parse(storedStaff);
+        } catch (e) {
+          console.error("Error al cargar usuarios de localStorage", e);
+        }
+      }
+    }
+
     window.initAppLogic = function() {
+      loadStoredStaffUsers();
       loadStoredGuestUser();
       setupFirestoreListeners();
       renderTopNav();
@@ -610,6 +624,18 @@
       resetBotChat();
       applySidebarState();
     };
+
+    // --- DETECCIÓN DE CIERRE DE PESTAÑA O NAVEGADOR ---
+    function setUserOffline() {
+      if (currentStaffUser) {
+        currentStaffUser.status = 'offline';
+        saveStaffUsersToFirestore();
+      }
+    }
+
+    window.addEventListener('beforeunload', function () {
+      setUserOffline();
+    });
 
     // --- SINTETIZADOR SONORO (WEB AUDIO API ALERTA OPERADOR) ---
     function playNotificationSound() {
@@ -718,10 +744,11 @@
           }
         });
 
-        const staffDocRef = window.fbDoc(window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users'));
+        const staffDocRef = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users');
         window.fbOnSnapshot(staffDocRef, (docSnap) => {
           if (docSnap.exists() && docSnap.data().users) {
             staffUsers = docSnap.data().users;
+            localStorage.setItem('connectflow_staff_users', JSON.stringify(staffUsers));
             renderStaffUsersTable();
             renderInternalStaffList();
           } else {
@@ -736,7 +763,6 @@
             const data = d.data();
             list.push({ id: d.id, ...data });
 
-            // Verificar si hay nueva asignación directa al operador actual en sesión
             if (currentStaffUser && data.assignedOperator === currentStaffUser.username && data.status === 'pending_assigned') {
               triggerOperatorPopup({ id: d.id, ...data });
             }
@@ -919,12 +945,10 @@
       }, 400);
     }
 
-    // LÓGICA DE ESCALAMIENTO HASTA 3 OPCIONES Y FALLBACK SI NADIE RESPONDE
     function processEscalatedOperatorRequest(option) {
       const candidates = [option.op1, option.op2, option.op3].filter(Boolean);
       let assignedUser = null;
 
-      // Buscar el primer operador online/disponible de la lista de candidatos
       for (let opUsername of candidates) {
         const found = staffUsers.find(u => u.username === opUsername && u.status === 'online');
         if (found) {
@@ -933,16 +957,13 @@
         }
       }
 
-      // Si no hay operador asignado específico disponible o la lista estaba vacía, verificar si hay alguien de staff online
       if (!assignedUser && candidates.length === 0) {
         assignedUser = staffUsers.find(u => u.status === 'online');
       }
 
       if (assignedUser) {
-        // OPERADOR DISPONIBLE ENCONTRADO
         requestHumanOperatorWithAssignee(assignedUser.username, assignedUser.role);
       } else {
-        // NINGÚN OPERADOR DISPONIBLE -> RESPUESTA AUTOMÁTICA FALLBACK
         triggerFallbackOccupiedMessage();
       }
     }
@@ -1141,7 +1162,6 @@
       const queueList = document.getElementById('operator-queue-list');
       const countBadge = document.getElementById('operator-queue-count');
 
-      // Mostrar consultas que pertenezcan o estén asignadas al operador actual
       const pendingTickets = operatorTickets.filter(t => t.status !== 'closed' && (!t.assignedOperator || t.assignedOperator === currentStaffUser?.username));
       countBadge.textContent = pendingTickets.length;
 
@@ -1312,18 +1332,21 @@
 
     function renderInternalStaffList() {
       const container = document.getElementById('internal-staff-list');
+      if (!container) return;
       container.innerHTML = '';
 
       staffUsers.forEach(u => {
         if (currentStaffUser && u.username === currentStaffUser.username) return;
 
         const isSelected = internalSelectedRecipient === u.username;
+        const isOnline = u.status === 'online';
         const bg = isSelected ? 'bg-indigo-600 text-white font-bold shadow' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300';
+        const dotColor = isOnline ? 'bg-emerald-400' : 'bg-slate-300';
 
         container.innerHTML += `
           <div onclick="selectInternalRecipient('${u.username}')" class="p-2.5 rounded-xl border ${bg} cursor-pointer transition flex items-center justify-between text-xs">
             <div class="flex items-center space-x-2 truncate">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="w-2 h-2 rounded-full ${dotColor}"></span>
               <span class="truncate">${u.username}</span>
             </div>
             <span class="text-[9px] ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600'} px-2 py-0.5 rounded font-medium truncate">${u.role}</span>
@@ -1475,7 +1498,6 @@
           </div>
         </div>
 
-        <!-- Opciones de Escalamiento Prioritario a 3 Operadores -->
         <div class="escalation-box ${action === 'request_escalated_operator' ? '' : 'hidden'} bg-indigo-50/70 p-2.5 rounded-lg border border-indigo-100 space-y-2">
           <label class="block text-[10px] font-bold text-indigo-900 uppercase"><i class="fa-solid fa-sitemap mr-1"></i> Cadena de Escalamiento Jerárquico (1º -> 2º -> 3º):</label>
           <div class="grid grid-cols-3 gap-2">
@@ -1503,7 +1525,6 @@
 
       container.appendChild(div);
 
-      // Asignar valores seleccionados en los selects
       if (op1) div.querySelector('.opt-op1').value = op1;
       if (op2) div.querySelector('.opt-op2').value = op2;
       if (op3) div.querySelector('.opt-op3').value = op3;
@@ -1589,11 +1610,16 @@
 
       tbody.innerHTML = '';
       staffUsers.forEach((u, index) => {
+        const isOnline = u.status === 'online';
+        const statusBadge = isOnline
+          ? `<span class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online</span>`
+          : `<span class="inline-flex items-center gap-1 text-xs text-slate-400 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300"></span> Offline</span>`;
+
         tbody.innerHTML += `
           <tr>
             <td class="p-3 font-semibold text-slate-800">${u.username}</td>
             <td class="p-3"><span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md border border-indigo-100 font-medium">${u.role}</span></td>
-            <td class="p-3"><span class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Activo</span></td>
+            <td class="p-3">${statusBadge}</td>
             <td class="p-3 text-right">
               ${u.username !== 'hermes' ? `<button onclick="deleteStaffUser(${index})" class="text-red-500 hover:text-red-700 text-xs font-semibold">Eliminar</button>` : `<span class="text-xs text-slate-400">Protegido</span>`}
             </td>
@@ -1604,8 +1630,11 @@
 
     function handleCreateStaffUser(e) {
       e.preventDefault();
-      const username = document.getElementById('new-user-username').value.trim().toLowerCase();
-      const password = document.getElementById('new-user-password').value.trim();
+      const usernameInput = document.getElementById('new-user-username');
+      const passwordInput = document.getElementById('new-user-password');
+      
+      const username = usernameInput.value.trim().toLowerCase();
+      const password = passwordInput.value.trim();
       const role = document.getElementById('new-user-role').value;
 
       if (staffUsers.some(u => u.username === username)) {
@@ -1613,25 +1642,37 @@
         return;
       }
 
-      staffUsers.push({ username, password, role, status: 'online' });
+      staffUsers.push({ username, password, role, status: 'offline' });
       saveStaffUsersToFirestore();
-      showToast(`Usuario '${username}' registrado.`, "success");
+      
+      usernameInput.value = '';
+      passwordInput.value = '';
+      showToast(`Usuario '${username}' registrado con éxito.`, "success");
     }
 
     function deleteStaffUser(index) {
-      if (confirm("¿Eliminar usuario?")) {
+      const targetUser = staffUsers[index];
+      if (confirm(`¿Estás seguro de eliminar el usuario '${targetUser.username}'?`)) {
         staffUsers.splice(index, 1);
         saveStaffUsersToFirestore();
+        showToast(`Usuario '${targetUser.username}' eliminado.`, "info");
       }
     }
 
     function saveStaffUsersToFirestore() {
+      localStorage.setItem('connectflow_staff_users', JSON.stringify(staffUsers));
+      renderStaffUsersTable();
+      renderInternalStaffList();
+
       if (window.fbDb) {
-        const ref = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users');
-        window.fbSetDoc(ref, { users: staffUsers });
-      } else {
-        renderStaffUsersTable();
-        renderInternalStaffList();
+        try {
+          const ref = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users');
+          window.fbSetDoc(ref, { users: staffUsers }).catch(err => {
+            console.warn("No se pudo sincronizar en Firebase:", err);
+          });
+        } catch (e) {
+          console.warn("Error en referencia de Firestore:", e);
+        }
       }
     }
 
@@ -1647,18 +1688,25 @@
       const found = staffUsers.find(u => u.username.toLowerCase() === user.toLowerCase() && u.password === pass);
 
       if (found) {
+        found.status = 'online';
         currentStaffUser = found;
+        saveStaffUsersToFirestore();
+
         closeStaffModal();
         renderTopNav();
         switchMainTab('staff');
         switchStaffTab(found.role === 'Diseñador' ? 'designer' : 'operators');
-        showToast(`Bienvenido ${found.username}!`, 'success');
+        showToast(`¡Bienvenido/a ${found.username}!`, 'success');
       } else {
         showToast("Credenciales incorrectas.", "error");
       }
     }
 
     function logoutStaff() {
+      if (currentStaffUser) {
+        currentStaffUser.status = 'offline';
+        saveStaffUsersToFirestore();
+      }
       currentStaffUser = null;
       renderTopNav();
       switchMainTab('chat');

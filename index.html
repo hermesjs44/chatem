@@ -524,7 +524,7 @@
     });
   </script>
 
-  <!-- LOGICA COMPLETA JS -->
+  <!-- LOGICA COMPLETA JS CON PERSISTENCIA EN LOCALSTORAGE Y FIRESTORE -->
   <script>
     const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'chat-encadenado-app';
 
@@ -601,8 +601,9 @@
     let operatorTickets = [];
     let internalMessages = [];
 
-    // --- CARGA DE USUARIOS LOCALES (LOCALSTORAGE FALLBACK) ---
-    function loadStoredStaffUsers() {
+    // --- CARGA DE DATOS LOCALES (LOCALSTORAGE PERSISTENCE) ---
+    function loadStoredData() {
+      // 1. Cargar Usuarios Staff
       const storedStaff = localStorage.getItem('connectflow_staff_users');
       if (storedStaff) {
         try {
@@ -611,10 +612,20 @@
           console.error("Error al cargar usuarios de localStorage", e);
         }
       }
+
+      // 2. Cargar Árbol del Bot
+      const storedBotTree = localStorage.getItem('connectflow_bot_tree');
+      if (storedBotTree) {
+        try {
+          botTree = JSON.parse(storedBotTree);
+        } catch (e) {
+          console.error("Error al cargar árbol del bot de localStorage", e);
+        }
+      }
     }
 
     window.initAppLogic = function() {
-      loadStoredStaffUsers();
+      loadStoredData();
       loadStoredGuestUser();
       setupFirestoreListeners();
       renderTopNav();
@@ -644,11 +655,10 @@
         if (!AudioContext) return;
         const ctx = new AudioContext();
 
-        // Primer Tono
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();
         osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(880, ctx.currentTime); // A5
+        osc1.frequency.setValueAtTime(880, ctx.currentTime);
         gain1.gain.setValueAtTime(0.3, ctx.currentTime);
         gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
         osc1.connect(gain1);
@@ -656,12 +666,11 @@
         osc1.start();
         osc1.stop(ctx.currentTime + 0.25);
 
-        // Segundo Tono agudo
         setTimeout(() => {
           const osc2 = ctx.createOscillator();
           const gain2 = ctx.createGain();
           osc2.type = 'sine';
-          osc2.frequency.setValueAtTime(1320, ctx.currentTime); // E6
+          osc2.frequency.setValueAtTime(1320, ctx.currentTime);
           gain2.gain.setValueAtTime(0.4, ctx.currentTime);
           gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
           osc2.connect(gain2);
@@ -736,11 +745,12 @@
       try {
         const botTreeDocRef = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'botTree', 'config');
         window.fbOnSnapshot(botTreeDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-            botTree = docSnap.data().nodes || defaultBotTree;
+          if (docSnap.exists() && docSnap.data().nodes) {
+            botTree = docSnap.data().nodes;
+            localStorage.setItem('connectflow_bot_tree', JSON.stringify(botTree));
             renderBotTreeList();
           } else {
-            window.fbSetDoc(botTreeDocRef, { nodes: defaultBotTree });
+            window.fbSetDoc(botTreeDocRef, { nodes: botTree });
           }
         });
 
@@ -1597,9 +1607,19 @@
     }
 
     function saveBotTreeToFirestore() {
+      // Guardar en localStorage inmediatamente
+      localStorage.setItem('connectflow_bot_tree', JSON.stringify(botTree));
+
+      // Guardar en Firestore
       if (window.fbDb) {
-        const ref = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'botTree', 'config');
-        window.fbSetDoc(ref, { nodes: botTree });
+        try {
+          const ref = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'botTree', 'config');
+          window.fbSetDoc(ref, { nodes: botTree }).catch(err => {
+            console.warn("Error al guardar árbol del bot en Firestore:", err);
+          });
+        } catch (e) {
+          console.warn("Error en referencia de Firestore:", e);
+        }
       }
     }
 
@@ -1660,10 +1680,12 @@
     }
 
     function saveStaffUsersToFirestore() {
+      // 1. Guardar en localStorage inmediatamente
       localStorage.setItem('connectflow_staff_users', JSON.stringify(staffUsers));
       renderStaffUsersTable();
       renderInternalStaffList();
 
+      // 2. Sincronizar en Firestore
       if (window.fbDb) {
         try {
           const ref = window.fbDoc(window.fbDb, 'artifacts', APP_ID, 'public', 'data', 'staff', 'users');
